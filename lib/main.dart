@@ -1,3 +1,4 @@
+import 'package:fin_fit_app_mobile/main_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
@@ -58,7 +59,7 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   int _currentIndex = 0;
   List<Widget> body = [
-    const Icon(Icons.home),
+    const MainPage(),
     const Icon(Icons.receipt_long),
     SvgPicture.asset("assets/ic_target_24.svg", height: 24, width: 24)
   ];
@@ -83,37 +84,13 @@ class _MyHomePageState extends State<MyHomePage> {
             BottomNavigationBarItem(
                 label: "Metas",
                 icon: SvgPicture.asset("assets/ic_target_24.svg",
-                height: 24, width: 24)
+                    height: 24, width: 24)
             ),
           ],
         ),
-        body: SafeArea(
-
-          child: Center(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: Container(
-                        height: 100,
-                        child: Card(
-                          borderOnForeground: true,
-                          child: Text("Teste 1"),
-                        ),
-                      ),
-                    )
-                  ],
-                ),
-                Card(
-                  borderOnForeground: true,
-                  child: Text("Teste 2"),
-                )
-              ],
-            ),
-          ),
-        ));
+        body: Center(
+          child: body[_currentIndex],
+        )
+    );
   }
 }
