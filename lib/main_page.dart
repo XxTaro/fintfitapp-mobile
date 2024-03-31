@@ -20,7 +20,7 @@ class _MainPage extends State<MainPage> {
           crossAxisAlignment: CrossAxisAlignment.center,
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
-            _buildCard("Saldo em " + returnMonth(DateTime.now()), resumedCurrentMonthCardBody(-1500.abs())),
+            _buildCard("Saldo em ${returnMonth(DateTime.now())}", resumedCurrentMonthCardBody(-1500.abs())),
             _buildCard("Teste 2", Text("body")),
           ],
         ),
