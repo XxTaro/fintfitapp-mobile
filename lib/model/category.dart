@@ -1,19 +1,21 @@
-class Category {
-  final int id;
-  final String name;
+import 'package:drift/drift.dart';
 
-  const Category({
-    required this.id,
-    required this.name
-  });
+class Category extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get name => text().withLength(min: 1, max: 20)();
 
-  factory Category.fromJson(Map<String, dynamic> data) => Category(
-      id: data['id'],
-      name: data['name']
-  );
-
-  Map<String, dynamic> toMap() => {
-    'id': id,
-    'name': name
-  };
+  // const Category({
+  //   required this.id,
+  //   required this.name
+  // });
+  //
+  // factory Category.fromJson(Map<String, dynamic> data) => Category(
+  //     id: data['id'],
+  //     name: data['name']
+  // );
+  //
+  // Map<String, dynamic> toMap() => {
+  //   'id': id,
+  //   'name': name
+  // };
 }
