@@ -1,3 +1,5 @@
+import 'package:fin_fit_app_mobile/helper/category_table_helper.dart';
+import 'package:fin_fit_app_mobile/service/database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
@@ -12,6 +14,19 @@ class MainPage extends StatefulWidget {
 }
 
 class _MainPage extends State<MainPage> {
+  late Database _db;
+
+  @override
+  void initState() {
+    super.initState();
+    _db = DatabaseConnection.instance;
+    CategoryTableHelper categoryTableHelper = CategoryTableHelper(_db);
+    categoryTableHelper.addCategory(CategoryCompanion.insert(name: "Teste1")).then((value) => {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Yay! A SnackBar! $value')))
+      }
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(

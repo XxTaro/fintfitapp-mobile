@@ -7,10 +7,14 @@ part 'category_table_helper.g.dart';
 
 @DriftAccessor(tables: [Category])
 class CategoryTableHelper extends DatabaseAccessor<Database> with _$CategoryTableHelperMixin {
-  CategoryTableHelper(Database db) : super(db);
+  CategoryTableHelper(super.db);
 
   // returns the generated id
-  Future<int> addCategory(CategoryCompanion entry) {
-    return into(category).insert(entry);
+  Future<int> addCategory(CategoryCompanion entry) async {
+    return await into(category).insert(entry);
+  }
+
+  Future<List<CategoryData>> getAllCategories() async {
+    return await select(category).get();
   }
 }
