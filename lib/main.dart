@@ -1,6 +1,7 @@
 import 'package:fin_fit_app_mobile/main_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:material_symbols_icons/symbols.dart';
 
 void main() {
   runApp(const MyApp());
@@ -74,17 +75,16 @@ class _MyHomePageState extends State<MyHomePage> {
               _currentIndex = newIndex;
             });
           },
-          items: [
-            const BottomNavigationBarItem(
+          items: const [
+            BottomNavigationBarItem(
                 label: "Início",
                 icon: Icon(Icons.home)),
-            const BottomNavigationBarItem(
+            BottomNavigationBarItem(
                 label: "Transações",
                 icon: Icon(Icons.receipt_long)),
             BottomNavigationBarItem(
                 label: "Metas",
-                icon: SvgPicture.asset("assets/ic_target_24.svg",
-                    height: 24, width: 24)
+                icon: Icon(Symbols.target, weight: 700)
             ),
           ],
         ),
