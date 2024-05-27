@@ -1,3 +1,4 @@
+import 'dart:ffi';
 import 'dart:io';
 
 import 'package:fin_fit_app_mobile/helper/category_table_helper.dart';
@@ -77,26 +78,56 @@ class _MainPage extends State<MainPage> {
   }
 
   Widget resumedCurrentMonthCardBody(int currentMonthBalance) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        if (currentMonthBalance > 0) ...[
+    return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          getMonthSummary(currentMonthBalance), 
+          getMonthSummaryInputAndOutputFlow(1000, 2500)
+        ]);
+  }
+
+  Widget getMonthSummary(int currentMonthBalance) {
+    if (currentMonthBalance > 0) {
+      return Row(
+        children: [
           SvgPicture.asset(
             "assets/ic_arrow_circle_up_24.svg",
-            height: 24,
-            width: 24,
+            height: 48,
+            width: 48,
             colorFilter: const ColorFilter.mode(Colors.green, BlendMode.srcIn),
           ),
           Text(" R\$ $currentMonthBalance")
-        ] else ...[
-          SvgPicture.asset(
-            "assets/ic_arrow_circle_down_24.svg",
-            height: 24,
-            width: 24,
-            colorFilter: const ColorFilter.mode(Colors.red, BlendMode.srcIn),
-          ),
-          Text(" - R\$ ${currentMonthBalance.abs()}")
-        ]
+        ],
+      );
+    } else {
+      return Row(children: [
+        SvgPicture.asset(
+          "assets/ic_arrow_circle_down_24.svg",
+          height: 48,
+          width: 48,
+          colorFilter: const ColorFilter.mode(Colors.red, BlendMode.srcIn),
+        ),
+        Text(" - R\$ ${currentMonthBalance.abs()}",
+            style: const TextStyle(fontSize: 24))
+      ]);
+    }
+  }
+
+  Widget getMonthSummaryInputAndOutputFlow(int input, int output) {
+      return Row(
+        children: [
+          getFlow('Entrada', input),
+          const Spacer(),
+          getFlow('Saída', output)
+        ],
+      );
+  }
+
+  Widget getFlow(String text, int flow) {
+    return Column(
+      children: [
+        Text(text),
+        Text("R\$ $flow")
       ],
     );
   }
