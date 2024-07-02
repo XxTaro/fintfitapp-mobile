@@ -44,6 +44,7 @@ dependencies:
   path_provider: ^2.0.0
   sqlite3: ^2.4.2
   material_symbols_icons: ^4.2744.0
+  google_fonts: ^6.2.0 
 
 dev_dependencies:
   drift_dev: ^2.16.0
