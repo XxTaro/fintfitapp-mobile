@@ -139,6 +139,6 @@ class _MainPage extends State<MainPage> {
   }
 
   String formattedNumberStr(double value) {
-    return NumberFormat.currency(locale: 'pt_BR', symbol: 'R\$').format(value);
+    return NumberFormat.currency(locale: 'pt_BR', symbol: ' R\$').format(value);
   }
 }
