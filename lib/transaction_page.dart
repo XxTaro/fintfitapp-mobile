@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class TransactionPage extends StatefulWidget {
   const TransactionPage({super.key});
@@ -11,7 +12,7 @@ class TransactionPage extends StatefulWidget {
 
 class _TransactionPage extends State<TransactionPage> {
 
-  List<String> items = ['Item 1', 'Item 2', 'Item 3', 'Item 4', 'Item 5', 'Item 6', 'Item 7', 'Item 8', 'Item 9', 'Item 10'];
+  List<String> items = ['Item 1', 'Item 2', 'Item 3', 'Item 4', 'Item 5', 'Item 6', 'Item 7', 'Item 8', 'Item 9', 'Item 10', 'Item 11', 'Item 12', 'Item 13'];
 
   late List<Widget> containers = [];
 
@@ -20,14 +21,38 @@ class _TransactionPage extends State<TransactionPage> {
   void initState() {
     super.initState();
     containers = items.map((item) {
-      return Container(
-        margin: EdgeInsets.all(8.0),
-        padding: EdgeInsets.all(16.0),
-        color: Colors.blue,
-        child: Text(
-          item,
-          style: TextStyle(color: Colors.white),
-        ),
+      return Flexible(
+        fit: FlexFit.loose,
+        child: Container(
+          width: 500,
+          margin: const EdgeInsets.all(2.0),
+          padding: const EdgeInsets.all(16.0),
+          decoration: BoxDecoration(
+            color: Colors.red,
+            borderRadius: BorderRadius.circular(6.0),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text('30/07/2024'),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(children: [
+                    SvgPicture.asset(
+                      "assets/ic_arrow_circle_up_24.svg",
+                      height: 28,
+                      width: 28,
+                      colorFilter: const ColorFilter.mode(Colors.green, BlendMode.srcIn),
+                    ),
+                    Text('Test', style: const TextStyle(fontSize: 24))
+                  ]),
+                  Text('R\$ 100,00', style: const TextStyle(fontSize: 24)) 
+                ]
+              )
+            ],
+          )
+        )
       );
     }).toList();
   }
@@ -39,14 +64,15 @@ class _TransactionPage extends State<TransactionPage> {
         children: [
           _buildTransactionHeader(),
           _buildDateSelection(),
-          Stack(
-            children: [SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Column(
-              children: containers
-            ),
-          )]
-          )
+          Expanded(child: Padding(
+            padding: const EdgeInsets.all(10),
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: containers
+              ),
+            )
+          ),)
         ],
       )
     );

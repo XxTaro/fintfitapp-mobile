@@ -51,28 +51,29 @@ class _MainPage extends State<MainPage> {
     return Row(
       children: [
         Expanded(
-            child: SizedBox(
-          child: Card(
-            margin: const EdgeInsets.only(top: 10, left: 10, right: 10),
-            color: Colors.grey[300],
-            borderOnForeground: true,
-            child: Padding(
-              padding: const EdgeInsets.all(15),
-              child: Column(
-                children: [
-                  Row(children: [
-                    Text(
-                      header,
-                      style: const TextStyle(fontSize: 18),
-                    )
-                  ]),
-                  const SizedBox(height: 10,),
-                  Row(children: [body]),
-                ],
+          child: SizedBox(
+            child: Card(
+              margin: const EdgeInsets.only(top: 10, left: 10, right: 10),
+              color: Colors.grey[300],
+              borderOnForeground: true,
+              child: Padding(
+                padding: const EdgeInsets.all(15),
+                child: Column(
+                  children: [
+                    Row(children: [
+                      Text(
+                        header,
+                        style: const TextStyle(fontSize: 18),
+                      )
+                    ]),
+                    const SizedBox(height: 10,),
+                    Row(children: [body]),
+                  ],
+                ),
               ),
             ),
-          ),
-        ))
+          )
+        )
       ],
     );
   }
