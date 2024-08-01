@@ -40,14 +40,14 @@ class _MainPage extends State<MainPage> {
                   style: TextStyle(fontSize: 24),
                 )),
             _buildCard("Saldo em ${returnMonth(DateTime.now())}", resumedCurrentMonthCardBody(-10000000)),
-            _buildCard("Teste 2", Text("body")),
+            _buildCard("Teste 2", [Text("body")]),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildCard(String header, Widget body) {
+  Widget _buildCard(String header, List<Widget> body) {
     return Row(
       children: [
         Expanded(
@@ -60,14 +60,12 @@ class _MainPage extends State<MainPage> {
                 padding: const EdgeInsets.all(15),
                 child: Column(
                   children: [
-                    Row(children: [
-                      Text(
-                        header,
-                        style: const TextStyle(fontSize: 18),
-                      )
-                    ]),
+                    Text(
+                      header,
+                      style: const TextStyle(fontSize: 18),
+                    ),
                     const SizedBox(height: 10,),
-                    Row(children: [body]),
+                    ...body,
                   ],
                 ),
               ),
@@ -78,47 +76,46 @@ class _MainPage extends State<MainPage> {
     );
   }
 
-  Widget resumedCurrentMonthCardBody(double currentMonthBalance) {
-    return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          getMonthSummary(currentMonthBalance),
-          const SizedBox(height: 10,),
-          getMonthSummaryInputAndOutputFlow(1000, 2500)
-        ]);
+  List<Widget> resumedCurrentMonthCardBody(double currentMonthBalance) {
+    return [
+      getMonthSummary(currentMonthBalance),
+      const SizedBox(height: 10,),
+      getMonthSummaryInputAndOutputFlow(1000, 2500)
+    ];
   }
 
   Widget getMonthSummary(double currentMonthBalance) {
+    SvgPicture picture;
     if (currentMonthBalance > 0) {
-      return Row(
-        children: [
-          SvgPicture.asset(
+      picture = SvgPicture.asset(
             "assets/ic_arrow_circle_up_24.svg",
             height: 48,
             width: 48,
             colorFilter: const ColorFilter.mode(Colors.green, BlendMode.srcIn),
-          ),
-          Text(formattedNumberStr(currentMonthBalance), style: const TextStyle(fontSize: 24))
-        ],
-      );
+          );
     } else {
-      return Row(children: [
-        SvgPicture.asset(
+      picture = SvgPicture.asset(
           "assets/ic_arrow_circle_down_24.svg",
           height: 48,
           width: 48,
           colorFilter: const ColorFilter.mode(Colors.red, BlendMode.srcIn),
-        ),
-        Text(formattedNumberStr(currentMonthBalance), style: const TextStyle(fontSize: 24))
-      ]);
+        );
     }
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        picture,
+        const SizedBox(width: 5,),
+        Text(formattedNumberStr(currentMonthBalance), style: const TextStyle(fontSize: 24))
+    ]);
   }
 
   Widget getMonthSummaryInputAndOutputFlow(double input, double output) {
       return Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           getFlow('Entrada', input),
-          const SizedBox(width: 50,),
           getFlow('Saída', output)
         ],
       );
