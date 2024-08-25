@@ -545,9 +545,9 @@ class $MovementTable extends Movement
   static const VerificationMeta _timestampMeta =
       const VerificationMeta('timestamp');
   @override
-  late final GeneratedColumn<int> timestamp = GeneratedColumn<int>(
+  late final GeneratedColumn<DateTime> timestamp = GeneratedColumn<DateTime>(
       'timestamp', aliasedName, false,
-      type: DriftSqlType.int, requiredDuringInsert: true);
+      type: DriftSqlType.dateTime, requiredDuringInsert: true);
   static const VerificationMeta _goalIdMeta = const VerificationMeta('goalId');
   @override
   late final GeneratedColumn<int> goalId = GeneratedColumn<int>(
@@ -621,7 +621,7 @@ class $MovementTable extends Movement
       categoryId: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}category_id'])!,
       timestamp: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}timestamp'])!,
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}timestamp'])!,
       goalId: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}goal_id'])!,
     );
@@ -638,7 +638,7 @@ class MovementData extends DataClass implements Insertable<MovementData> {
   final String description;
   final int value;
   final int categoryId;
-  final int timestamp;
+  final DateTime timestamp;
   final int goalId;
   const MovementData(
       {required this.id,
@@ -654,7 +654,7 @@ class MovementData extends DataClass implements Insertable<MovementData> {
     map['description'] = Variable<String>(description);
     map['value'] = Variable<int>(value);
     map['category_id'] = Variable<int>(categoryId);
-    map['timestamp'] = Variable<int>(timestamp);
+    map['timestamp'] = Variable<DateTime>(timestamp);
     map['goal_id'] = Variable<int>(goalId);
     return map;
   }
@@ -678,7 +678,7 @@ class MovementData extends DataClass implements Insertable<MovementData> {
       description: serializer.fromJson<String>(json['description']),
       value: serializer.fromJson<int>(json['value']),
       categoryId: serializer.fromJson<int>(json['categoryId']),
-      timestamp: serializer.fromJson<int>(json['timestamp']),
+      timestamp: serializer.fromJson<DateTime>(json['timestamp']),
       goalId: serializer.fromJson<int>(json['goalId']),
     );
   }
@@ -690,7 +690,7 @@ class MovementData extends DataClass implements Insertable<MovementData> {
       'description': serializer.toJson<String>(description),
       'value': serializer.toJson<int>(value),
       'categoryId': serializer.toJson<int>(categoryId),
-      'timestamp': serializer.toJson<int>(timestamp),
+      'timestamp': serializer.toJson<DateTime>(timestamp),
       'goalId': serializer.toJson<int>(goalId),
     };
   }
@@ -700,7 +700,7 @@ class MovementData extends DataClass implements Insertable<MovementData> {
           String? description,
           int? value,
           int? categoryId,
-          int? timestamp,
+          DateTime? timestamp,
           int? goalId}) =>
       MovementData(
         id: id ?? this.id,
@@ -743,7 +743,7 @@ class MovementCompanion extends UpdateCompanion<MovementData> {
   final Value<String> description;
   final Value<int> value;
   final Value<int> categoryId;
-  final Value<int> timestamp;
+  final Value<DateTime> timestamp;
   final Value<int> goalId;
   const MovementCompanion({
     this.id = const Value.absent(),
@@ -758,7 +758,7 @@ class MovementCompanion extends UpdateCompanion<MovementData> {
     required String description,
     required int value,
     required int categoryId,
-    required int timestamp,
+    required DateTime timestamp,
     required int goalId,
   })  : description = Value(description),
         value = Value(value),
@@ -770,7 +770,7 @@ class MovementCompanion extends UpdateCompanion<MovementData> {
     Expression<String>? description,
     Expression<int>? value,
     Expression<int>? categoryId,
-    Expression<int>? timestamp,
+    Expression<DateTime>? timestamp,
     Expression<int>? goalId,
   }) {
     return RawValuesInsertable({
@@ -788,7 +788,7 @@ class MovementCompanion extends UpdateCompanion<MovementData> {
       Value<String>? description,
       Value<int>? value,
       Value<int>? categoryId,
-      Value<int>? timestamp,
+      Value<DateTime>? timestamp,
       Value<int>? goalId}) {
     return MovementCompanion(
       id: id ?? this.id,
@@ -816,7 +816,7 @@ class MovementCompanion extends UpdateCompanion<MovementData> {
       map['category_id'] = Variable<int>(categoryId.value);
     }
     if (timestamp.present) {
-      map['timestamp'] = Variable<int>(timestamp.value);
+      map['timestamp'] = Variable<DateTime>(timestamp.value);
     }
     if (goalId.present) {
       map['goal_id'] = Variable<int>(goalId.value);

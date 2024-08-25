@@ -10,7 +10,7 @@ import 'package:sqlite3_flutter_libs/sqlite3_flutter_libs.dart';
 
 import '../model/category.dart';
 import '../model/goal.dart';
-import '../model/transaction.dart';
+import '../model/movement.dart';
 
 part 'database.g.dart';
 

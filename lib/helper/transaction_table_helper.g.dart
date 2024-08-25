@@ -3,6 +3,6 @@
 part of 'transaction_table_helper.dart';
 
 // ignore_for_file: type=lint
-mixin _$TransactionTableHelperMixin on DatabaseAccessor<Database> {
+mixin _$MovementTableHelperMixin on DatabaseAccessor<Database> {
   $MovementTable get movement => attachedDatabase.movement;
 }

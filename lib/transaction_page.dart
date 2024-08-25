@@ -1,8 +1,6 @@
 import 'dart:io';
 
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart';
@@ -69,37 +67,68 @@ class _TransactionPage extends State<TransactionPage> {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Column(
-        children: [
-          _buildTransactionHeader(),
-          _buildDateSelection(),
-          Expanded(child: Padding(
-            padding: const EdgeInsets.all(10),
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: containers
-              ),
-            )
-          ),)
-        ],
-      )
+    return MaterialApp(
+      home: Scaffold(
+        body: SafeArea(
+          child: Column(
+            children: [
+              _buildTransactionHeader(),
+              _buildDateSelection(),
+              Expanded(child: Padding(
+                padding: const EdgeInsets.all(10),
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: containers
+                  ),
+                )
+              ),),
+              Row(
+                children: [
+                  Expanded(
+                    flex: 80,
+                    child: Padding(
+                      padding: const EdgeInsets.only(left: 10, right: 10, bottom: 10),
+                      child: TextFormField(
+                        decoration: const InputDecoration(
+                          contentPadding: EdgeInsets.all(0),
+                          border: UnderlineInputBorder(),
+                          labelText: 'Procure pelo gasto desejado',
+                        ),
+                      ),
+                    )
+                  ),
+                ],
+              )
+            ],
+          ),
+        ),
+      ),
     );
   }
 
   Widget _buildTransactionHeader() {
-    return const Padding(
-      padding: EdgeInsets.only(left: 20, right: 20, top: 20), 
+    return Padding(
+      padding: const EdgeInsets.only(left: 20, right: 20, top: 20), 
       child: Stack(
         alignment: Alignment.center,
         children: [
-          Center(
+          const Center(
             child: Text('Transações', style: TextStyle(fontSize: 28))
           ),
           Positioned(
+            left: 0, 
+            child: IconButton(
+              onPressed: () => {},
+              icon: const Icon(Icons.filter_alt_off, size: 28),
+            ) 
+          ),
+          Positioned(
             right: 0, 
-            child: Icon(Icons.filter_alt_off, size: 28)
+            child: IconButton(
+              onPressed: () {}, 
+              icon: const Icon(Icons.add, size: 28)
+            )
           )
         ],
       )

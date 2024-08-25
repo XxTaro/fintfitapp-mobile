@@ -5,6 +5,6 @@ class Movement extends Table {
   TextColumn get description => text().withLength(min: 1, max: 20)();
   IntColumn get value => integer()();
   IntColumn get categoryId => integer()();
-  IntColumn get timestamp => integer()();
+  DateTimeColumn get timestamp => dateTime()();
   IntColumn get goalId => integer()();
 }
