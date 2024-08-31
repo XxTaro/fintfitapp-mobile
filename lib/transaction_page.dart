@@ -126,7 +126,9 @@ class _TransactionPage extends State<TransactionPage> {
           Positioned(
             right: 0, 
             child: IconButton(
-              onPressed: () {}, 
+              onPressed: () {
+                _showAddTransactionDialog();
+              }, 
               icon: const Icon(Icons.add, size: 28)
             )
           )
@@ -135,6 +137,34 @@ class _TransactionPage extends State<TransactionPage> {
     );
   }
 
+  _showAddTransactionDialog() {
+    showDialog(
+      context: context, 
+      builder: (BuildContext context) {
+        return AlertDialog(
+          actionsPadding: EdgeInsets.zero,
+          
+          content: Container(
+            child: Text('data'),
+          ),
+          actions: <Widget>[
+            cancelaButton,
+            continuaButton
+          ],
+        );
+      },
+    );
+  }
+
+  Widget cancelaButton = TextButton(
+    child: Text("Cancelar"),
+    onPressed:  () {},
+  );
+  Widget continuaButton = TextButton(
+    child: Text("Continar"),
+    onPressed:  () {},
+  );
+
   Widget _buildDateSelection() {
     return Padding(
       padding: const EdgeInsets.only(top: 30), 
@@ -142,7 +172,7 @@ class _TransactionPage extends State<TransactionPage> {
         alignment: Alignment.center,
         children: [
           Center(
-            child: Text(date, style: TextStyle(fontSize: 18))
+            child: Text(date, style: const TextStyle(fontSize: 18))
           ),
           Positioned(
             left: 0,
