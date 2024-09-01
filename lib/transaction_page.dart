@@ -1,6 +1,8 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart';
@@ -15,6 +17,8 @@ class TransactionPage extends StatefulWidget {
 class _TransactionPage extends State<TransactionPage> {
   String date = "date";
   int _dateDiff = 0;
+  String? _selectedCategory;
+  String _internalSelectedCategory = "Teste";
   List<String> items = ['Item 1', 'Item 2', 'Item 3', 'Item 4', 'Item 5', 'Item 6', 'Item 7', 'Item 8', 'Item 9', 'Item 10', 'Item 11', 'Item 12', 'Item 13'];
 
   late List<Widget> containers = [];
@@ -137,33 +141,87 @@ class _TransactionPage extends State<TransactionPage> {
     );
   }
 
-  _showAddTransactionDialog() {
-    showDialog(
-      context: context, 
+  Future<void> _showAddTransactionDialog() async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false, // user must tap button!
       builder: (BuildContext context) {
         return AlertDialog(
-          actionsPadding: EdgeInsets.zero,
-          
-          content: Container(
-            child: Text('data'),
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(5))
+          ),
+          backgroundColor: Colors.white,
+          insetPadding: EdgeInsets.zero,
+          contentPadding: const EdgeInsets.only(left: 24, right: 24, top: 24, bottom: 24),
+          clipBehavior: Clip.antiAliasWithSaveLayer,
+          title: const Text('Adicionar transação'),
+          content: SizedBox(
+            width: MediaQuery.of(context).size.width * 0.8,
+            child: SingleChildScrollView(
+              padding: EdgeInsets.zero,
+              child: ListBody(
+                children: <Widget>[
+                  const TextField(
+                    decoration: InputDecoration(
+                      filled: true,
+                      prefixIcon: Icon(Icons.description),
+                      contentPadding: EdgeInsets.all(0),
+                      border: UnderlineInputBorder(),
+                      labelText: 'Descrição',
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  const TextField(
+                    decoration: InputDecoration(
+                      filled: true,
+                      prefixIcon: Icon(Icons.attach_money),
+                      contentPadding: EdgeInsets.all(0),
+                      border: UnderlineInputBorder(),
+                      labelText: 'Valor',
+                      hintText: '0,00'
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  Column(
+                    children: [
+                      DropdownButton(
+                        value: _selectedCategory,
+                        items: items.map((String value) {
+                          return DropdownMenuItem(
+                            value: value,
+                            child: Text(value),
+                          );
+                        }).toList(),
+                        onChanged: (value) {
+                          setState(() {
+                            _internalSelectedCategory = value.toString();
+                          });
+                        },
+                      )
+                    ],
+                  )
+                ],
+              ),
+            ),
           ),
           actions: <Widget>[
-            cancelaButton,
-            continuaButton
+            TextButton(
+              child: const Text('Cancelar'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: const Text('Adicionar'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
           ],
         );
       },
     );
   }
-
-  Widget cancelaButton = TextButton(
-    child: Text("Cancelar"),
-    onPressed:  () {},
-  );
-  Widget continuaButton = TextButton(
-    child: Text("Continar"),
-    onPressed:  () {},
-  );
 
   Widget _buildDateSelection() {
     return Padding(
