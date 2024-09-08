@@ -15,7 +15,7 @@ class $CategoryTable extends Category
       'id', aliasedName, false,
       hasAutoIncrement: true,
       type: DriftSqlType.int,
-      requiredDuringInsert: false,
+      requiredDuringInsert: true,
       defaultConstraints:
           GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
   static const VerificationMeta _nameMeta = const VerificationMeta('name');
@@ -40,6 +40,8 @@ class $CategoryTable extends Category
     final data = instance.toColumns(true);
     if (data.containsKey('id')) {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
     }
     if (data.containsKey('name')) {
       context.handle(
@@ -51,7 +53,7 @@ class $CategoryTable extends Category
   }
 
   @override
-  Set<GeneratedColumn> get $primaryKey => {id};
+  Set<GeneratedColumn> get $primaryKey => {id, name};
   @override
   CategoryData map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
@@ -109,6 +111,13 @@ class CategoryData extends DataClass implements Insertable<CategoryData> {
         id: id ?? this.id,
         name: name ?? this.name,
       );
+  CategoryData copyWithCompanion(CategoryCompanion data) {
+    return CategoryData(
+      id: data.id.present ? data.id.value : this.id,
+      name: data.name.present ? data.name.value : this.name,
+    );
+  }
+
   @override
   String toString() {
     return (StringBuffer('CategoryData(')
@@ -129,28 +138,36 @@ class CategoryData extends DataClass implements Insertable<CategoryData> {
 class CategoryCompanion extends UpdateCompanion<CategoryData> {
   final Value<int> id;
   final Value<String> name;
+  final Value<int> rowid;
   const CategoryCompanion({
     this.id = const Value.absent(),
     this.name = const Value.absent(),
+    this.rowid = const Value.absent(),
   });
   CategoryCompanion.insert({
-    this.id = const Value.absent(),
+    required int id,
     required String name,
-  }) : name = Value(name);
+    this.rowid = const Value.absent(),
+  })  : id = Value(id),
+        name = Value(name);
   static Insertable<CategoryData> custom({
     Expression<int>? id,
     Expression<String>? name,
+    Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (name != null) 'name': name,
+      if (rowid != null) 'rowid': rowid,
     });
   }
 
-  CategoryCompanion copyWith({Value<int>? id, Value<String>? name}) {
+  CategoryCompanion copyWith(
+      {Value<int>? id, Value<String>? name, Value<int>? rowid}) {
     return CategoryCompanion(
       id: id ?? this.id,
       name: name ?? this.name,
+      rowid: rowid ?? this.rowid,
     );
   }
 
@@ -163,6 +180,9 @@ class CategoryCompanion extends UpdateCompanion<CategoryData> {
     if (name.present) {
       map['name'] = Variable<String>(name.value);
     }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
     return map;
   }
 
@@ -170,7 +190,8 @@ class CategoryCompanion extends UpdateCompanion<CategoryData> {
   String toString() {
     return (StringBuffer('CategoryCompanion(')
           ..write('id: $id, ')
-          ..write('name: $name')
+          ..write('name: $name, ')
+          ..write('rowid: $rowid')
           ..write(')'))
         .toString();
   }
@@ -379,6 +400,19 @@ class GoalData extends DataClass implements Insertable<GoalData> {
         dateStart: dateStart ?? this.dateStart,
         dateEnd: dateEnd ?? this.dateEnd,
       );
+  GoalData copyWithCompanion(GoalCompanion data) {
+    return GoalData(
+      id: data.id.present ? data.id.value : this.id,
+      description:
+          data.description.present ? data.description.value : this.description,
+      value: data.value.present ? data.value.value : this.value,
+      categoryId:
+          data.categoryId.present ? data.categoryId.value : this.categoryId,
+      dateStart: data.dateStart.present ? data.dateStart.value : this.dateStart,
+      dateEnd: data.dateEnd.present ? data.dateEnd.value : this.dateEnd,
+    );
+  }
+
   @override
   String toString() {
     return (StringBuffer('GoalData(')
@@ -531,11 +565,20 @@ class $MovementTable extends Movement
           GeneratedColumn.checkTextLength(minTextLength: 1, maxTextLength: 20),
       type: DriftSqlType.string,
       requiredDuringInsert: true);
+  static const VerificationMeta _isIncomeMeta =
+      const VerificationMeta('isIncome');
+  @override
+  late final GeneratedColumn<bool> isIncome = GeneratedColumn<bool>(
+      'is_income', aliasedName, false,
+      type: DriftSqlType.bool,
+      requiredDuringInsert: true,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('CHECK ("is_income" IN (0, 1))'));
   static const VerificationMeta _valueMeta = const VerificationMeta('value');
   @override
-  late final GeneratedColumn<int> value = GeneratedColumn<int>(
+  late final GeneratedColumn<double> value = GeneratedColumn<double>(
       'value', aliasedName, false,
-      type: DriftSqlType.int, requiredDuringInsert: true);
+      type: DriftSqlType.double, requiredDuringInsert: true);
   static const VerificationMeta _categoryIdMeta =
       const VerificationMeta('categoryId');
   @override
@@ -548,14 +591,35 @@ class $MovementTable extends Movement
   late final GeneratedColumn<DateTime> timestamp = GeneratedColumn<DateTime>(
       'timestamp', aliasedName, false,
       type: DriftSqlType.dateTime, requiredDuringInsert: true);
+  static const VerificationMeta _createdAtMeta =
+      const VerificationMeta('createdAt');
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+      'created_at', aliasedName, false,
+      type: DriftSqlType.dateTime, requiredDuringInsert: true);
+  static const VerificationMeta _updatedAtMeta =
+      const VerificationMeta('updatedAt');
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+      'updated_at', aliasedName, true,
+      type: DriftSqlType.dateTime, requiredDuringInsert: false);
   static const VerificationMeta _goalIdMeta = const VerificationMeta('goalId');
   @override
   late final GeneratedColumn<int> goalId = GeneratedColumn<int>(
-      'goal_id', aliasedName, false,
-      type: DriftSqlType.int, requiredDuringInsert: true);
+      'goal_id', aliasedName, true,
+      type: DriftSqlType.int, requiredDuringInsert: false);
   @override
-  List<GeneratedColumn> get $columns =>
-      [id, description, value, categoryId, timestamp, goalId];
+  List<GeneratedColumn> get $columns => [
+        id,
+        description,
+        isIncome,
+        value,
+        categoryId,
+        timestamp,
+        createdAt,
+        updatedAt,
+        goalId
+      ];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -577,6 +641,12 @@ class $MovementTable extends Movement
     } else if (isInserting) {
       context.missing(_descriptionMeta);
     }
+    if (data.containsKey('is_income')) {
+      context.handle(_isIncomeMeta,
+          isIncome.isAcceptableOrUnknown(data['is_income']!, _isIncomeMeta));
+    } else if (isInserting) {
+      context.missing(_isIncomeMeta);
+    }
     if (data.containsKey('value')) {
       context.handle(
           _valueMeta, value.isAcceptableOrUnknown(data['value']!, _valueMeta));
@@ -597,11 +667,19 @@ class $MovementTable extends Movement
     } else if (isInserting) {
       context.missing(_timestampMeta);
     }
+    if (data.containsKey('created_at')) {
+      context.handle(_createdAtMeta,
+          createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta));
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(_updatedAtMeta,
+          updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta));
+    }
     if (data.containsKey('goal_id')) {
       context.handle(_goalIdMeta,
           goalId.isAcceptableOrUnknown(data['goal_id']!, _goalIdMeta));
-    } else if (isInserting) {
-      context.missing(_goalIdMeta);
     }
     return context;
   }
@@ -616,14 +694,20 @@ class $MovementTable extends Movement
           .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
       description: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}description'])!,
+      isIncome: attachedDatabase.typeMapping
+          .read(DriftSqlType.bool, data['${effectivePrefix}is_income'])!,
       value: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}value'])!,
+          .read(DriftSqlType.double, data['${effectivePrefix}value'])!,
       categoryId: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}category_id'])!,
       timestamp: attachedDatabase.typeMapping
           .read(DriftSqlType.dateTime, data['${effectivePrefix}timestamp'])!,
+      createdAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}created_at'])!,
+      updatedAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}updated_at']),
       goalId: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}goal_id'])!,
+          .read(DriftSqlType.int, data['${effectivePrefix}goal_id']),
     );
   }
 
@@ -636,26 +720,39 @@ class $MovementTable extends Movement
 class MovementData extends DataClass implements Insertable<MovementData> {
   final int id;
   final String description;
-  final int value;
+  final bool isIncome;
+  final double value;
   final int categoryId;
   final DateTime timestamp;
-  final int goalId;
+  final DateTime createdAt;
+  final DateTime? updatedAt;
+  final int? goalId;
   const MovementData(
       {required this.id,
       required this.description,
+      required this.isIncome,
       required this.value,
       required this.categoryId,
       required this.timestamp,
-      required this.goalId});
+      required this.createdAt,
+      this.updatedAt,
+      this.goalId});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
     map['description'] = Variable<String>(description);
-    map['value'] = Variable<int>(value);
+    map['is_income'] = Variable<bool>(isIncome);
+    map['value'] = Variable<double>(value);
     map['category_id'] = Variable<int>(categoryId);
     map['timestamp'] = Variable<DateTime>(timestamp);
-    map['goal_id'] = Variable<int>(goalId);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    if (!nullToAbsent || updatedAt != null) {
+      map['updated_at'] = Variable<DateTime>(updatedAt);
+    }
+    if (!nullToAbsent || goalId != null) {
+      map['goal_id'] = Variable<int>(goalId);
+    }
     return map;
   }
 
@@ -663,10 +760,16 @@ class MovementData extends DataClass implements Insertable<MovementData> {
     return MovementCompanion(
       id: Value(id),
       description: Value(description),
+      isIncome: Value(isIncome),
       value: Value(value),
       categoryId: Value(categoryId),
       timestamp: Value(timestamp),
-      goalId: Value(goalId),
+      createdAt: Value(createdAt),
+      updatedAt: updatedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(updatedAt),
+      goalId:
+          goalId == null && nullToAbsent ? const Value.absent() : Value(goalId),
     );
   }
 
@@ -676,10 +779,13 @@ class MovementData extends DataClass implements Insertable<MovementData> {
     return MovementData(
       id: serializer.fromJson<int>(json['id']),
       description: serializer.fromJson<String>(json['description']),
-      value: serializer.fromJson<int>(json['value']),
+      isIncome: serializer.fromJson<bool>(json['isIncome']),
+      value: serializer.fromJson<double>(json['value']),
       categoryId: serializer.fromJson<int>(json['categoryId']),
       timestamp: serializer.fromJson<DateTime>(json['timestamp']),
-      goalId: serializer.fromJson<int>(json['goalId']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime?>(json['updatedAt']),
+      goalId: serializer.fromJson<int?>(json['goalId']),
     );
   }
   @override
@@ -688,97 +794,144 @@ class MovementData extends DataClass implements Insertable<MovementData> {
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
       'description': serializer.toJson<String>(description),
-      'value': serializer.toJson<int>(value),
+      'isIncome': serializer.toJson<bool>(isIncome),
+      'value': serializer.toJson<double>(value),
       'categoryId': serializer.toJson<int>(categoryId),
       'timestamp': serializer.toJson<DateTime>(timestamp),
-      'goalId': serializer.toJson<int>(goalId),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime?>(updatedAt),
+      'goalId': serializer.toJson<int?>(goalId),
     };
   }
 
   MovementData copyWith(
           {int? id,
           String? description,
-          int? value,
+          bool? isIncome,
+          double? value,
           int? categoryId,
           DateTime? timestamp,
-          int? goalId}) =>
+          DateTime? createdAt,
+          Value<DateTime?> updatedAt = const Value.absent(),
+          Value<int?> goalId = const Value.absent()}) =>
       MovementData(
         id: id ?? this.id,
         description: description ?? this.description,
+        isIncome: isIncome ?? this.isIncome,
         value: value ?? this.value,
         categoryId: categoryId ?? this.categoryId,
         timestamp: timestamp ?? this.timestamp,
-        goalId: goalId ?? this.goalId,
+        createdAt: createdAt ?? this.createdAt,
+        updatedAt: updatedAt.present ? updatedAt.value : this.updatedAt,
+        goalId: goalId.present ? goalId.value : this.goalId,
       );
+  MovementData copyWithCompanion(MovementCompanion data) {
+    return MovementData(
+      id: data.id.present ? data.id.value : this.id,
+      description:
+          data.description.present ? data.description.value : this.description,
+      isIncome: data.isIncome.present ? data.isIncome.value : this.isIncome,
+      value: data.value.present ? data.value.value : this.value,
+      categoryId:
+          data.categoryId.present ? data.categoryId.value : this.categoryId,
+      timestamp: data.timestamp.present ? data.timestamp.value : this.timestamp,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      goalId: data.goalId.present ? data.goalId.value : this.goalId,
+    );
+  }
+
   @override
   String toString() {
     return (StringBuffer('MovementData(')
           ..write('id: $id, ')
           ..write('description: $description, ')
+          ..write('isIncome: $isIncome, ')
           ..write('value: $value, ')
           ..write('categoryId: $categoryId, ')
           ..write('timestamp: $timestamp, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
           ..write('goalId: $goalId')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode =>
-      Object.hash(id, description, value, categoryId, timestamp, goalId);
+  int get hashCode => Object.hash(id, description, isIncome, value, categoryId,
+      timestamp, createdAt, updatedAt, goalId);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is MovementData &&
           other.id == this.id &&
           other.description == this.description &&
+          other.isIncome == this.isIncome &&
           other.value == this.value &&
           other.categoryId == this.categoryId &&
           other.timestamp == this.timestamp &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt &&
           other.goalId == this.goalId);
 }
 
 class MovementCompanion extends UpdateCompanion<MovementData> {
   final Value<int> id;
   final Value<String> description;
-  final Value<int> value;
+  final Value<bool> isIncome;
+  final Value<double> value;
   final Value<int> categoryId;
   final Value<DateTime> timestamp;
-  final Value<int> goalId;
+  final Value<DateTime> createdAt;
+  final Value<DateTime?> updatedAt;
+  final Value<int?> goalId;
   const MovementCompanion({
     this.id = const Value.absent(),
     this.description = const Value.absent(),
+    this.isIncome = const Value.absent(),
     this.value = const Value.absent(),
     this.categoryId = const Value.absent(),
     this.timestamp = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
     this.goalId = const Value.absent(),
   });
   MovementCompanion.insert({
     this.id = const Value.absent(),
     required String description,
-    required int value,
+    required bool isIncome,
+    required double value,
     required int categoryId,
     required DateTime timestamp,
-    required int goalId,
+    required DateTime createdAt,
+    this.updatedAt = const Value.absent(),
+    this.goalId = const Value.absent(),
   })  : description = Value(description),
+        isIncome = Value(isIncome),
         value = Value(value),
         categoryId = Value(categoryId),
         timestamp = Value(timestamp),
-        goalId = Value(goalId);
+        createdAt = Value(createdAt);
   static Insertable<MovementData> custom({
     Expression<int>? id,
     Expression<String>? description,
-    Expression<int>? value,
+    Expression<bool>? isIncome,
+    Expression<double>? value,
     Expression<int>? categoryId,
     Expression<DateTime>? timestamp,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
     Expression<int>? goalId,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (description != null) 'description': description,
+      if (isIncome != null) 'is_income': isIncome,
       if (value != null) 'value': value,
       if (categoryId != null) 'category_id': categoryId,
       if (timestamp != null) 'timestamp': timestamp,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
       if (goalId != null) 'goal_id': goalId,
     });
   }
@@ -786,16 +939,22 @@ class MovementCompanion extends UpdateCompanion<MovementData> {
   MovementCompanion copyWith(
       {Value<int>? id,
       Value<String>? description,
-      Value<int>? value,
+      Value<bool>? isIncome,
+      Value<double>? value,
       Value<int>? categoryId,
       Value<DateTime>? timestamp,
-      Value<int>? goalId}) {
+      Value<DateTime>? createdAt,
+      Value<DateTime?>? updatedAt,
+      Value<int?>? goalId}) {
     return MovementCompanion(
       id: id ?? this.id,
       description: description ?? this.description,
+      isIncome: isIncome ?? this.isIncome,
       value: value ?? this.value,
       categoryId: categoryId ?? this.categoryId,
       timestamp: timestamp ?? this.timestamp,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
       goalId: goalId ?? this.goalId,
     );
   }
@@ -809,14 +968,23 @@ class MovementCompanion extends UpdateCompanion<MovementData> {
     if (description.present) {
       map['description'] = Variable<String>(description.value);
     }
+    if (isIncome.present) {
+      map['is_income'] = Variable<bool>(isIncome.value);
+    }
     if (value.present) {
-      map['value'] = Variable<int>(value.value);
+      map['value'] = Variable<double>(value.value);
     }
     if (categoryId.present) {
       map['category_id'] = Variable<int>(categoryId.value);
     }
     if (timestamp.present) {
       map['timestamp'] = Variable<DateTime>(timestamp.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
     }
     if (goalId.present) {
       map['goal_id'] = Variable<int>(goalId.value);
@@ -829,9 +997,12 @@ class MovementCompanion extends UpdateCompanion<MovementData> {
     return (StringBuffer('MovementCompanion(')
           ..write('id: $id, ')
           ..write('description: $description, ')
+          ..write('isIncome: $isIncome, ')
           ..write('value: $value, ')
           ..write('categoryId: $categoryId, ')
           ..write('timestamp: $timestamp, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
           ..write('goalId: $goalId')
           ..write(')'))
         .toString();
@@ -840,6 +1011,7 @@ class MovementCompanion extends UpdateCompanion<MovementData> {
 
 abstract class _$Database extends GeneratedDatabase {
   _$Database(QueryExecutor e) : super(e);
+  $DatabaseManager get managers => $DatabaseManager(this);
   late final $CategoryTable category = $CategoryTable(this);
   late final $GoalTable goal = $GoalTable(this);
   late final $MovementTable movement = $MovementTable(this);
@@ -849,4 +1021,411 @@ abstract class _$Database extends GeneratedDatabase {
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities =>
       [category, goal, movement];
+}
+
+typedef $$CategoryTableCreateCompanionBuilder = CategoryCompanion Function({
+  required int id,
+  required String name,
+  Value<int> rowid,
+});
+typedef $$CategoryTableUpdateCompanionBuilder = CategoryCompanion Function({
+  Value<int> id,
+  Value<String> name,
+  Value<int> rowid,
+});
+
+class $$CategoryTableTableManager extends RootTableManager<
+    _$Database,
+    $CategoryTable,
+    CategoryData,
+    $$CategoryTableFilterComposer,
+    $$CategoryTableOrderingComposer,
+    $$CategoryTableCreateCompanionBuilder,
+    $$CategoryTableUpdateCompanionBuilder> {
+  $$CategoryTableTableManager(_$Database db, $CategoryTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          filteringComposer:
+              $$CategoryTableFilterComposer(ComposerState(db, table)),
+          orderingComposer:
+              $$CategoryTableOrderingComposer(ComposerState(db, table)),
+          updateCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            Value<String> name = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              CategoryCompanion(
+            id: id,
+            name: name,
+            rowid: rowid,
+          ),
+          createCompanionCallback: ({
+            required int id,
+            required String name,
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              CategoryCompanion.insert(
+            id: id,
+            name: name,
+            rowid: rowid,
+          ),
+        ));
+}
+
+class $$CategoryTableFilterComposer
+    extends FilterComposer<_$Database, $CategoryTable> {
+  $$CategoryTableFilterComposer(super.$state);
+  ColumnFilters<int> get id => $state.composableBuilder(
+      column: $state.table.id,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  ColumnFilters<String> get name => $state.composableBuilder(
+      column: $state.table.name,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+}
+
+class $$CategoryTableOrderingComposer
+    extends OrderingComposer<_$Database, $CategoryTable> {
+  $$CategoryTableOrderingComposer(super.$state);
+  ColumnOrderings<int> get id => $state.composableBuilder(
+      column: $state.table.id,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  ColumnOrderings<String> get name => $state.composableBuilder(
+      column: $state.table.name,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+}
+
+typedef $$GoalTableCreateCompanionBuilder = GoalCompanion Function({
+  Value<int> id,
+  required String description,
+  required int value,
+  required int categoryId,
+  required DateTime dateStart,
+  required DateTime dateEnd,
+});
+typedef $$GoalTableUpdateCompanionBuilder = GoalCompanion Function({
+  Value<int> id,
+  Value<String> description,
+  Value<int> value,
+  Value<int> categoryId,
+  Value<DateTime> dateStart,
+  Value<DateTime> dateEnd,
+});
+
+class $$GoalTableTableManager extends RootTableManager<
+    _$Database,
+    $GoalTable,
+    GoalData,
+    $$GoalTableFilterComposer,
+    $$GoalTableOrderingComposer,
+    $$GoalTableCreateCompanionBuilder,
+    $$GoalTableUpdateCompanionBuilder> {
+  $$GoalTableTableManager(_$Database db, $GoalTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          filteringComposer:
+              $$GoalTableFilterComposer(ComposerState(db, table)),
+          orderingComposer:
+              $$GoalTableOrderingComposer(ComposerState(db, table)),
+          updateCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            Value<String> description = const Value.absent(),
+            Value<int> value = const Value.absent(),
+            Value<int> categoryId = const Value.absent(),
+            Value<DateTime> dateStart = const Value.absent(),
+            Value<DateTime> dateEnd = const Value.absent(),
+          }) =>
+              GoalCompanion(
+            id: id,
+            description: description,
+            value: value,
+            categoryId: categoryId,
+            dateStart: dateStart,
+            dateEnd: dateEnd,
+          ),
+          createCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            required String description,
+            required int value,
+            required int categoryId,
+            required DateTime dateStart,
+            required DateTime dateEnd,
+          }) =>
+              GoalCompanion.insert(
+            id: id,
+            description: description,
+            value: value,
+            categoryId: categoryId,
+            dateStart: dateStart,
+            dateEnd: dateEnd,
+          ),
+        ));
+}
+
+class $$GoalTableFilterComposer extends FilterComposer<_$Database, $GoalTable> {
+  $$GoalTableFilterComposer(super.$state);
+  ColumnFilters<int> get id => $state.composableBuilder(
+      column: $state.table.id,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  ColumnFilters<String> get description => $state.composableBuilder(
+      column: $state.table.description,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  ColumnFilters<int> get value => $state.composableBuilder(
+      column: $state.table.value,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  ColumnFilters<int> get categoryId => $state.composableBuilder(
+      column: $state.table.categoryId,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  ColumnFilters<DateTime> get dateStart => $state.composableBuilder(
+      column: $state.table.dateStart,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  ColumnFilters<DateTime> get dateEnd => $state.composableBuilder(
+      column: $state.table.dateEnd,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+}
+
+class $$GoalTableOrderingComposer
+    extends OrderingComposer<_$Database, $GoalTable> {
+  $$GoalTableOrderingComposer(super.$state);
+  ColumnOrderings<int> get id => $state.composableBuilder(
+      column: $state.table.id,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  ColumnOrderings<String> get description => $state.composableBuilder(
+      column: $state.table.description,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  ColumnOrderings<int> get value => $state.composableBuilder(
+      column: $state.table.value,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  ColumnOrderings<int> get categoryId => $state.composableBuilder(
+      column: $state.table.categoryId,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  ColumnOrderings<DateTime> get dateStart => $state.composableBuilder(
+      column: $state.table.dateStart,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  ColumnOrderings<DateTime> get dateEnd => $state.composableBuilder(
+      column: $state.table.dateEnd,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+}
+
+typedef $$MovementTableCreateCompanionBuilder = MovementCompanion Function({
+  Value<int> id,
+  required String description,
+  required bool isIncome,
+  required double value,
+  required int categoryId,
+  required DateTime timestamp,
+  required DateTime createdAt,
+  Value<DateTime?> updatedAt,
+  Value<int?> goalId,
+});
+typedef $$MovementTableUpdateCompanionBuilder = MovementCompanion Function({
+  Value<int> id,
+  Value<String> description,
+  Value<bool> isIncome,
+  Value<double> value,
+  Value<int> categoryId,
+  Value<DateTime> timestamp,
+  Value<DateTime> createdAt,
+  Value<DateTime?> updatedAt,
+  Value<int?> goalId,
+});
+
+class $$MovementTableTableManager extends RootTableManager<
+    _$Database,
+    $MovementTable,
+    MovementData,
+    $$MovementTableFilterComposer,
+    $$MovementTableOrderingComposer,
+    $$MovementTableCreateCompanionBuilder,
+    $$MovementTableUpdateCompanionBuilder> {
+  $$MovementTableTableManager(_$Database db, $MovementTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          filteringComposer:
+              $$MovementTableFilterComposer(ComposerState(db, table)),
+          orderingComposer:
+              $$MovementTableOrderingComposer(ComposerState(db, table)),
+          updateCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            Value<String> description = const Value.absent(),
+            Value<bool> isIncome = const Value.absent(),
+            Value<double> value = const Value.absent(),
+            Value<int> categoryId = const Value.absent(),
+            Value<DateTime> timestamp = const Value.absent(),
+            Value<DateTime> createdAt = const Value.absent(),
+            Value<DateTime?> updatedAt = const Value.absent(),
+            Value<int?> goalId = const Value.absent(),
+          }) =>
+              MovementCompanion(
+            id: id,
+            description: description,
+            isIncome: isIncome,
+            value: value,
+            categoryId: categoryId,
+            timestamp: timestamp,
+            createdAt: createdAt,
+            updatedAt: updatedAt,
+            goalId: goalId,
+          ),
+          createCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            required String description,
+            required bool isIncome,
+            required double value,
+            required int categoryId,
+            required DateTime timestamp,
+            required DateTime createdAt,
+            Value<DateTime?> updatedAt = const Value.absent(),
+            Value<int?> goalId = const Value.absent(),
+          }) =>
+              MovementCompanion.insert(
+            id: id,
+            description: description,
+            isIncome: isIncome,
+            value: value,
+            categoryId: categoryId,
+            timestamp: timestamp,
+            createdAt: createdAt,
+            updatedAt: updatedAt,
+            goalId: goalId,
+          ),
+        ));
+}
+
+class $$MovementTableFilterComposer
+    extends FilterComposer<_$Database, $MovementTable> {
+  $$MovementTableFilterComposer(super.$state);
+  ColumnFilters<int> get id => $state.composableBuilder(
+      column: $state.table.id,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  ColumnFilters<String> get description => $state.composableBuilder(
+      column: $state.table.description,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  ColumnFilters<bool> get isIncome => $state.composableBuilder(
+      column: $state.table.isIncome,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  ColumnFilters<double> get value => $state.composableBuilder(
+      column: $state.table.value,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  ColumnFilters<int> get categoryId => $state.composableBuilder(
+      column: $state.table.categoryId,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  ColumnFilters<DateTime> get timestamp => $state.composableBuilder(
+      column: $state.table.timestamp,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  ColumnFilters<DateTime> get createdAt => $state.composableBuilder(
+      column: $state.table.createdAt,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  ColumnFilters<DateTime> get updatedAt => $state.composableBuilder(
+      column: $state.table.updatedAt,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  ColumnFilters<int> get goalId => $state.composableBuilder(
+      column: $state.table.goalId,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+}
+
+class $$MovementTableOrderingComposer
+    extends OrderingComposer<_$Database, $MovementTable> {
+  $$MovementTableOrderingComposer(super.$state);
+  ColumnOrderings<int> get id => $state.composableBuilder(
+      column: $state.table.id,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  ColumnOrderings<String> get description => $state.composableBuilder(
+      column: $state.table.description,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  ColumnOrderings<bool> get isIncome => $state.composableBuilder(
+      column: $state.table.isIncome,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  ColumnOrderings<double> get value => $state.composableBuilder(
+      column: $state.table.value,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  ColumnOrderings<int> get categoryId => $state.composableBuilder(
+      column: $state.table.categoryId,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  ColumnOrderings<DateTime> get timestamp => $state.composableBuilder(
+      column: $state.table.timestamp,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  ColumnOrderings<DateTime> get createdAt => $state.composableBuilder(
+      column: $state.table.createdAt,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  ColumnOrderings<DateTime> get updatedAt => $state.composableBuilder(
+      column: $state.table.updatedAt,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  ColumnOrderings<int> get goalId => $state.composableBuilder(
+      column: $state.table.goalId,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+}
+
+class $DatabaseManager {
+  final _$Database _db;
+  $DatabaseManager(this._db);
+  $$CategoryTableTableManager get category =>
+      $$CategoryTableTableManager(_db, _db.category);
+  $$GoalTableTableManager get goal => $$GoalTableTableManager(_db, _db.goal);
+  $$MovementTableTableManager get movement =>
+      $$MovementTableTableManager(_db, _db.movement);
 }

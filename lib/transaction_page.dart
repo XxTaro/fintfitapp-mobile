@@ -1,11 +1,14 @@
 import 'dart:io';
 
+import 'package:fin_fit_app_mobile/helper/category_table_helper.dart';
+import 'package:fin_fit_app_mobile/helper/movement_table_helper.dart';
+import 'package:fin_fit_app_mobile/service/database.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
-import 'package:flutter/widgets.dart';
+import 'package:material_symbols_icons/symbols.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart';
+import 'package:flutter/services.dart';
 
 class TransactionPage extends StatefulWidget {
   const TransactionPage({super.key});
@@ -17,56 +20,101 @@ class TransactionPage extends StatefulWidget {
 class _TransactionPage extends State<TransactionPage> {
   String date = "date";
   int _dateDiff = 0;
-  String? _selectedCategory;
-  String _internalSelectedCategory = "Teste";
-  List<String> items = ['Item 1', 'Item 2', 'Item 3', 'Item 4', 'Item 5', 'Item 6', 'Item 7', 'Item 8', 'Item 9', 'Item 10', 'Item 11', 'Item 12', 'Item 13'];
-
+  CategoryData? _selectedCategory;
+  String? _selectedGoal;
+  
+  late Database _db;
+  late MovementTableHelper movementTableHelper;
+  late CategoryTableHelper categoryTableHelper;
+  late List<CategoryData> categories;
   late List<Widget> containers = [];
-
+  late List<MovementData> transactions;
+ 
+  final TextEditingController _dateController = TextEditingController();
+  final TextEditingController _descriptionController = TextEditingController();
+  final TextEditingController _valueController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
+    _db = DatabaseConnection.instance;
+    movementTableHelper = MovementTableHelper(_db);
+    categoryTableHelper = CategoryTableHelper(_db);
     setState(() {
       date = returnMonthAndYear(DateTime(DateTime.now().year, DateTime.now().month - _dateDiff, DateTime.now().day));
     });
-    containers = items.map((item) {
-      return Flexible(
-        fit: FlexFit.loose,
-        child: Container(
-          width: 500,
-          margin: const EdgeInsets.all(2.0),
-          padding: const EdgeInsets.all(16.0),
-          decoration: BoxDecoration(
-            color: Colors.grey[300],
-            borderRadius: BorderRadius.circular(6.0),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text('30/07/2024'),
-              const SizedBox(height: 5),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Row(children: [
-                    SvgPicture.asset(
-                      "assets/ic_arrow_circle_up_24.svg",
-                      height: 28,
-                      width: 28,
-                      colorFilter: const ColorFilter.mode(Colors.green, BlendMode.srcIn),
-                    ),
-                    const SizedBox(width: 5),
-                    Text('Test', style: const TextStyle(fontSize: 18))
-                  ]),
-                  Text('R\$ 100,00', style: const TextStyle(fontSize: 18)) 
-                ]
-              )
-            ],
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      _setCategoriesList();
+      _setMovementList();
+      
+    });
+  }
+
+  _setCategoriesList() async {
+    List<CategoryData> list = await Future.value(categoryTableHelper.getAllCategories());
+    categories = list;
+  }
+
+  _setMovementList() async {
+    List<MovementData> list = await Future.value(movementTableHelper.getAllTransactions());
+    transactions = list;
+    print(list);
+    setState(() {
+      _fillTransactionContainer();
+    });
+  }
+
+  _fillTransactionContainer() {
+    containers = transactions.map((item) {
+        return Flexible(
+          fit: FlexFit.loose,
+          child: Container(
+            width: 500,
+            margin: const EdgeInsets.all(2.0),
+            padding: const EdgeInsets.all(16.0),
+            decoration: BoxDecoration(
+              color: Colors.grey[300],
+              borderRadius: BorderRadius.circular(6.0),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(DateFormat('dd/MM/yyyy').format(item.timestamp)),
+                const SizedBox(height: 5),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(children: [
+                      getInflowOrOutflowIcon(item.isIncome),
+                      const SizedBox(width: 5),
+                      Text(item.description, style: const TextStyle(fontSize: 18))
+                    ]),
+                    Text('R\$ ${item.value.toString().replaceAll(r'.', ',')}', style: const TextStyle(fontSize: 18)) 
+                  ]
+                )
+              ],
+            )
           )
-        )
+        );
+      }).toList();
+  }
+
+  Widget getInflowOrOutflowIcon(bool isIncome) {
+    if (isIncome) {
+      return SvgPicture.asset(
+        "assets/ic_arrow_circle_up_24.svg",
+        height: 28,
+        width: 28,
+        colorFilter: const ColorFilter.mode(Colors.green, BlendMode.srcIn),
       );
-    }).toList();
+    } else {
+      return SvgPicture.asset(
+        "assets/ic_arrow_circle_down_24.svg",
+        height: 28,
+        width: 28,
+        colorFilter: const ColorFilter.mode(Colors.red, BlendMode.srcIn),
+      );
+    }
   }
 
   @override
@@ -131,6 +179,12 @@ class _TransactionPage extends State<TransactionPage> {
             right: 0, 
             child: IconButton(
               onPressed: () {
+                _descriptionController.clear();
+                _valueController.clear();
+                _dateController.clear();
+                _dateController.text = DateFormat('dd/MM/yyyy').format(DateTime.now());
+                _selectedGoal = null;
+                _selectedCategory = null;
                 _showAddTransactionDialog();
               }, 
               icon: const Icon(Icons.add, size: 28)
@@ -161,8 +215,22 @@ class _TransactionPage extends State<TransactionPage> {
               padding: EdgeInsets.zero,
               child: ListBody(
                 children: <Widget>[
-                  const TextField(
-                    decoration: InputDecoration(
+                  TextField(
+                    onTap: () => _selectDate(),
+                    readOnly: true,
+                    controller: _dateController,
+                    decoration: const InputDecoration(
+                      filled: true,
+                      prefixIcon: Icon(Icons.calendar_today),
+                      contentPadding: EdgeInsets.all(0),
+                      border: UnderlineInputBorder(),
+                      labelText: 'Data',
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  TextField(
+                    controller: _descriptionController,
+                    decoration: const InputDecoration(
                       filled: true,
                       prefixIcon: Icon(Icons.description),
                       contentPadding: EdgeInsets.all(0),
@@ -171,37 +239,69 @@ class _TransactionPage extends State<TransactionPage> {
                     ),
                   ),
                   const SizedBox(height: 20),
-                  const TextField(
-                    decoration: InputDecoration(
+                   TextField(
+                    controller: _valueController,
+                    decoration: const InputDecoration(
                       filled: true,
                       prefixIcon: Icon(Icons.attach_money),
                       contentPadding: EdgeInsets.all(0),
                       border: UnderlineInputBorder(),
                       labelText: 'Valor',
-                      hintText: '0,00'
+                      hintText: '0,00',
                     ),
+                    inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'^\d+(,\d{0,2})?$'))],
+                    keyboardType: TextInputType.number,
                   ),
                   const SizedBox(height: 20),
-                  Column(
-                    children: [
-                      DropdownButton(
-                        value: _selectedCategory,
-                        items: items.map((String value) {
-                          return DropdownMenuItem(
-                            value: value,
-                            child: Text(value),
-                          );
-                        }).toList(),
-                        onChanged: (value) {
-                          setState(() {
-                            _internalSelectedCategory = value.toString();
-                          });
-                        },
-                      )
-                    ],
-                  )
+                  DropdownButtonFormField(
+                      decoration: const InputDecoration(
+                        filled: true,
+                        prefixIcon: Icon(Symbols.target, weight: 700),
+                        border: UnderlineInputBorder(),
+                        label: Text('Categoria')
+                      ),
+                      menuMaxHeight: 250,
+                      value: _selectedCategory,
+                      isExpanded: true,
+                      items: categories.map((CategoryData category) {
+                        return DropdownMenuItem(
+                          value: category,
+                          child: Text(category.name),
+                        );
+                      }).toList(),
+                      onChanged: (value) {
+                        setState(() {
+                          _selectedCategory = value as CategoryData;
+                        });
+                      },
+                  
+                  ),
+                  const SizedBox(height: 20),
+                  DropdownButtonFormField(
+                      decoration: const InputDecoration(
+                        filled: true,
+                        prefixIcon: Icon(Icons.sell),
+                        border: UnderlineInputBorder(),
+                        label: Text('Meta')
+                      ),
+                      menuMaxHeight: 250,
+                      value: _selectedGoal,
+                      isExpanded: true,
+                      items: [].map((dynamic category) {
+                        return DropdownMenuItem(
+                          value: category,
+                          child: Text(category),
+                        );
+                      }).toList(),
+                      onChanged: (value) {
+                        setState(() {
+                          _selectedGoal = value.toString();
+                        });
+                      },
+                    )
+                  
                 ],
-              ),
+              )
             ),
           ),
           actions: <Widget>[
@@ -214,6 +314,24 @@ class _TransactionPage extends State<TransactionPage> {
             TextButton(
               child: const Text('Adicionar'),
               onPressed: () {
+                if (_dateController.text.isEmpty 
+                    || _selectedCategory == null 
+                    || _descriptionController.text.isEmpty 
+                    || _valueController.text.isEmpty) {
+                  return;
+                }
+                MovementCompanion movement = MovementCompanion.insert(
+                  timestamp: DateFormat('dd/MM/yyyy').parse(_dateController.text),
+                  createdAt: DateTime.now(),
+                  isIncome: true,
+                  description: _descriptionController.text,
+                  value: double.parse(_valueController.text.replaceAll(r',', '.')),
+                  categoryId: _selectedCategory!.id
+                );
+                movementTableHelper.addTransaction(movement);
+                setState(() {
+                  _fillTransactionContainer();
+                });
                 Navigator.of(context).pop();
               },
             ),
@@ -221,6 +339,21 @@ class _TransactionPage extends State<TransactionPage> {
         );
       },
     );
+  }
+
+  Future<void> _selectDate() async {
+    DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(2000), 
+      lastDate: DateTime(2100)
+    );
+
+    if (picked != null) {
+      setState(() {
+        _dateController.text = DateFormat('dd/MM/yyyy').format(picked);
+      });
+    }
   }
 
   Widget _buildDateSelection() {

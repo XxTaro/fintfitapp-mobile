@@ -41,14 +41,14 @@ void fillCategoryTable(Database db) async {
   List<CategoryData> allCategories = await allCategoriesFuture;
   if (allCategories.isNotEmpty) return;
   final categories = [
-    CategoryCompanion.insert(name: 'Alimentação'),
-    CategoryCompanion.insert(name: 'Transporte'),
-    CategoryCompanion.insert(name: 'Saúde'),
-    CategoryCompanion.insert(name: 'Entretenimento'),
-    CategoryCompanion.insert(name: 'Educação'),
-    CategoryCompanion.insert(name: 'Investimento'),
-    CategoryCompanion.insert(name: 'Moradia'),
-    CategoryCompanion.insert(name: 'Outros'),
+    CategoryCompanion.insert(id: 0, name: 'Alimentação'),
+    CategoryCompanion.insert(id: 1, name: 'Transporte'),
+    CategoryCompanion.insert(id: 2, name: 'Saúde'),
+    CategoryCompanion.insert(id: 3, name: 'Entretenimento'),
+    CategoryCompanion.insert(id: 4, name: 'Educação'),
+    CategoryCompanion.insert(id: 5, name: 'Investimento'),
+    CategoryCompanion.insert(id: 6, name: 'Moradia'),
+    CategoryCompanion.insert(id: 7, name: 'Outros'),
   ];
 
   for (var category in categories) {

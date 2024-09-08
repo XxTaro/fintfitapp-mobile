@@ -3,7 +3,7 @@ import 'package:fin_fit_app_mobile/model/movement.dart';
 
 import '../service/database.dart';
 
-part 'transaction_table_helper.g.dart';
+part 'movement_table_helper.g.dart';
 
 @DriftAccessor(tables: [Movement])
 class MovementTableHelper extends DatabaseAccessor<Database> with _$MovementTableHelperMixin {
@@ -17,7 +17,7 @@ class MovementTableHelper extends DatabaseAccessor<Database> with _$MovementTabl
     return await select(movement).get();
   }
 
-  Future<List<MovementData>> getTransactionsByMonth(DateTime date) async {
+  Future<List<MovementData>> getByMonth(DateTime date) async {
     return (await (select(movement)..where((tbl) => tbl.timestamp.month.equals(date.month) & tbl.timestamp.year.equals(date.year))).get()).toList();
   }
 }
