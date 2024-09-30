@@ -28,11 +28,16 @@ class _TransactionPage extends State<TransactionPage> {
   late CategoryTableHelper categoryTableHelper;
   late List<CategoryData> categories;
   late List<Widget> containers = [];
-  late List<MovementData> transactions;
+  late List<MovementData> transactions = [];
  
   final TextEditingController _dateController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
   final TextEditingController _valueController = TextEditingController();
+  final TextEditingController _isIncomeController = TextEditingController();
+  List<bool> isEntryOrExit = [
+    false,
+    false
+  ];
 
   @override
   void initState() {
@@ -56,7 +61,10 @@ class _TransactionPage extends State<TransactionPage> {
   }
 
   _setMovementList() async {
-    List<MovementData> list = await Future.value(movementTableHelper.getAllTransactions());
+    List<MovementData> list = await Future.value(movementTableHelper.getByMonth(DateTime(
+      DateTime.now().year,
+      DateTime.now().month + _dateDiff
+    )));
     transactions = list;
     print(list);
     setState(() {
@@ -64,8 +72,23 @@ class _TransactionPage extends State<TransactionPage> {
     });
   }
 
-  _fillTransactionContainer() {
-    containers = transactions.map((item) {
+  Widget _fillTransactionContainer() {
+    if (transactions.isEmpty) {
+      return const Center(
+        child: Text('Não existem transações para o mês e ano selecionado!')
+      );
+    }
+    
+    return SingleChildScrollView(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: _getTransactions()
+      ),
+    );
+  }
+
+  List<Widget> _getTransactions() {
+    return containers = transactions.map((item) {
         return Flexible(
           fit: FlexFit.loose,
           child: Container(
@@ -128,12 +151,7 @@ class _TransactionPage extends State<TransactionPage> {
               _buildDateSelection(),
               Expanded(child: Padding(
                 padding: const EdgeInsets.all(10),
-                child: SingleChildScrollView(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: containers
-                  ),
-                )
+                child: _fillTransactionContainer()
               ),),
               Row(
                 children: [
@@ -215,6 +233,24 @@ class _TransactionPage extends State<TransactionPage> {
               padding: EdgeInsets.zero,
               child: ListBody(
                 children: <Widget>[
+                  Center(
+                    child: ToggleButtons(
+                      isSelected: isEntryOrExit,
+                      onPressed: (int index) {
+                        setState(() {
+                          for (var i = 0; i < isEntryOrExit.length; i++) {
+                            isEntryOrExit[i] = false;
+                          }
+                          isEntryOrExit[index] = !isEntryOrExit[index];
+                        });
+                      },
+                      children: const [
+                        Text('Entrada'),
+                        Text('Saída')
+                      ]
+                    )
+                  ),
+                  const SizedBox(height: 20),
                   TextField(
                     onTap: () => _selectDate(),
                     readOnly: true,
@@ -342,9 +378,10 @@ class _TransactionPage extends State<TransactionPage> {
   }
 
   Future<void> _selectDate() async {
+    DateTime currentDate = DateFormat("dd/MM/yyyy").parse(_dateController.text);
     DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: DateTime.now(),
+      initialDate: currentDate,
       firstDate: DateTime(2000), 
       lastDate: DateTime(2100)
     );
@@ -375,6 +412,7 @@ class _TransactionPage extends State<TransactionPage> {
                     setState(() {
                       _dateDiff--;
                       date = returnMonthAndYear(DateTime(DateTime.now().year, DateTime.now().month + _dateDiff, DateTime.now().day));
+                      _setMovementList();
                     });
                   },
                 ),
@@ -390,6 +428,7 @@ class _TransactionPage extends State<TransactionPage> {
                     setState(() {
                       _dateDiff++;
                       date = returnMonthAndYear(DateTime(DateTime.now().year, DateTime.now().month + _dateDiff, DateTime.now().day));
+                      _setMovementList();
                     });
                   },
                 )
