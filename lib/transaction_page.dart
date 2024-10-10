@@ -33,9 +33,8 @@ class _TransactionPage extends State<TransactionPage> {
   final TextEditingController _dateController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
   final TextEditingController _valueController = TextEditingController();
-  final TextEditingController _isIncomeController = TextEditingController();
   List<bool> isEntryOrExit = [
-    false,
+    true,
     false
   ];
 
@@ -214,87 +213,101 @@ class _TransactionPage extends State<TransactionPage> {
   }
 
   Future<void> _showAddTransactionDialog() async {
-    return showDialog<void>(
-      context: context,
-      barrierDismissible: false, // user must tap button!
-      builder: (BuildContext context) {
-        return AlertDialog(
-          shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.all(Radius.circular(5))
-          ),
-          backgroundColor: Colors.white,
-          insetPadding: EdgeInsets.zero,
-          contentPadding: const EdgeInsets.only(left: 24, right: 24, top: 24, bottom: 24),
-          clipBehavior: Clip.antiAliasWithSaveLayer,
-          title: const Text('Adicionar transação'),
-          content: SizedBox(
-            width: MediaQuery.of(context).size.width * 0.8,
-            child: SingleChildScrollView(
-              padding: EdgeInsets.zero,
-              child: ListBody(
-                children: <Widget>[
-                  Center(
-                    child: ToggleButtons(
-                      isSelected: isEntryOrExit,
-                      onPressed: (int index) {
-                        setState(() {
-                          for (var i = 0; i < isEntryOrExit.length; i++) {
-                            isEntryOrExit[i] = false;
-                          }
-                          isEntryOrExit[index] = !isEntryOrExit[index];
-                        });
-                      },
-                      children: const [
-                        Text('Entrada'),
-                        Text('Saída')
-                      ]
-                    )
-                  ),
-                  const SizedBox(height: 20),
-                  TextField(
-                    onTap: () => _selectDate(),
-                    readOnly: true,
-                    controller: _dateController,
-                    decoration: const InputDecoration(
-                      filled: true,
-                      prefixIcon: Icon(Icons.calendar_today),
-                      contentPadding: EdgeInsets.all(0),
-                      border: UnderlineInputBorder(),
-                      labelText: 'Data',
+  return showDialog<void>(
+    context: context,
+    barrierDismissible: false, // user must tap button!
+    builder: (BuildContext context) {
+      return StatefulBuilder(
+        builder: (BuildContext context, StateSetter setState) {
+          return AlertDialog(
+            shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.all(Radius.circular(5)),
+            ),
+            backgroundColor: Colors.white,
+            insetPadding: EdgeInsets.zero,
+            contentPadding: const EdgeInsets.only(left: 24, right: 24, top: 24, bottom: 24),
+            clipBehavior: Clip.antiAliasWithSaveLayer,
+            title: const Text('Adicionar transação'),
+            content: SizedBox(
+              width: MediaQuery.of(context).size.width * 0.8,
+              child: SingleChildScrollView(
+                padding: EdgeInsets.zero,
+                child: ListBody(
+                  children: <Widget>[
+                    Center(
+                      child: ToggleButtons(
+                        disabledColor: Colors.black,
+                        disabledBorderColor: Colors.grey,
+                        selectedColor: Colors.deepPurple,
+                        selectedBorderColor: Colors.deepPurple,
+                        borderRadius: const BorderRadius.all(Radius.circular(8)),
+                        
+                        isSelected: isEntryOrExit,
+                        onPressed: (int index) {
+                          setState(() {
+                            isEntryOrExit = List.generate(
+                              isEntryOrExit.length,
+                              (i) => i == index,
+                            );
+                          });
+                        },
+                        children: const [
+                          Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 12),
+                            child: Text('Entrada'),
+                          ),
+                          Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 12),
+                            child: Text('Saída'),
+                          )
+                        ],
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 20),
-                  TextField(
-                    controller: _descriptionController,
-                    decoration: const InputDecoration(
-                      filled: true,
-                      prefixIcon: Icon(Icons.description),
-                      contentPadding: EdgeInsets.all(0),
-                      border: UnderlineInputBorder(),
-                      labelText: 'Descrição',
+                    const SizedBox(height: 20),
+                    TextField(
+                      onTap: () => _selectDate(),
+                      readOnly: true,
+                      controller: _dateController,
+                      decoration: const InputDecoration(
+                        filled: true,
+                        prefixIcon: Icon(Icons.calendar_today),
+                        contentPadding: EdgeInsets.all(0),
+                        border: UnderlineInputBorder(),
+                        labelText: 'Data',
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 20),
-                   TextField(
-                    controller: _valueController,
-                    decoration: const InputDecoration(
-                      filled: true,
-                      prefixIcon: Icon(Icons.attach_money),
-                      contentPadding: EdgeInsets.all(0),
-                      border: UnderlineInputBorder(),
-                      labelText: 'Valor',
-                      hintText: '0,00',
+                    const SizedBox(height: 20),
+                    TextField(
+                      controller: _descriptionController,
+                      decoration: const InputDecoration(
+                        filled: true,
+                        prefixIcon: Icon(Icons.description),
+                        contentPadding: EdgeInsets.all(0),
+                        border: UnderlineInputBorder(),
+                        labelText: 'Descrição',
+                      ),
                     ),
-                    inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'^\d+(,\d{0,2})?$'))],
-                    keyboardType: TextInputType.number,
-                  ),
-                  const SizedBox(height: 20),
-                  DropdownButtonFormField(
+                    const SizedBox(height: 20),
+                    TextField(
+                      controller: _valueController,
+                      decoration: const InputDecoration(
+                        filled: true,
+                        prefixIcon: Icon(Icons.attach_money),
+                        contentPadding: EdgeInsets.all(0),
+                        border: UnderlineInputBorder(),
+                        labelText: 'Valor',
+                        hintText: '0,00',
+                      ),
+                      inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'^\d+(,\d{0,2})?$'))],
+                      keyboardType: TextInputType.number,
+                    ),
+                    const SizedBox(height: 20),
+                    DropdownButtonFormField(
                       decoration: const InputDecoration(
                         filled: true,
                         prefixIcon: Icon(Symbols.target, weight: 700),
                         border: UnderlineInputBorder(),
-                        label: Text('Categoria')
+                        label: Text('Categoria'),
                       ),
                       menuMaxHeight: 250,
                       value: _selectedCategory,
@@ -310,15 +323,14 @@ class _TransactionPage extends State<TransactionPage> {
                           _selectedCategory = value as CategoryData;
                         });
                       },
-                  
-                  ),
-                  const SizedBox(height: 20),
-                  DropdownButtonFormField(
+                    ),
+                    const SizedBox(height: 20),
+                    DropdownButtonFormField(
                       decoration: const InputDecoration(
                         filled: true,
                         prefixIcon: Icon(Icons.sell),
                         border: UnderlineInputBorder(),
-                        label: Text('Meta')
+                        label: Text('Meta'),
                       ),
                       menuMaxHeight: 250,
                       value: _selectedGoal,
@@ -334,48 +346,50 @@ class _TransactionPage extends State<TransactionPage> {
                           _selectedGoal = value.toString();
                         });
                       },
-                    )
-                  
-                ],
-              )
+                    ),
+                  ],
+                ),
+              ),
             ),
-          ),
-          actions: <Widget>[
-            TextButton(
-              child: const Text('Cancelar'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-            TextButton(
-              child: const Text('Adicionar'),
-              onPressed: () {
-                if (_dateController.text.isEmpty 
-                    || _selectedCategory == null 
-                    || _descriptionController.text.isEmpty 
-                    || _valueController.text.isEmpty) {
-                  return;
-                }
-                MovementCompanion movement = MovementCompanion.insert(
-                  timestamp: DateFormat('dd/MM/yyyy').parse(_dateController.text),
-                  createdAt: DateTime.now(),
-                  isIncome: true,
-                  description: _descriptionController.text,
-                  value: double.parse(_valueController.text.replaceAll(r',', '.')),
-                  categoryId: _selectedCategory!.id
-                );
-                movementTableHelper.addTransaction(movement);
-                setState(() {
-                  _fillTransactionContainer();
-                });
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
+            actions: <Widget>[
+              TextButton(
+                child: const Text('Cancelar'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+              TextButton(
+                child: const Text('Adicionar'),
+                onPressed: () {
+                  if (_dateController.text.isEmpty ||
+                      _selectedCategory == null ||
+                      _descriptionController.text.isEmpty ||
+                      _valueController.text.isEmpty) {
+                    return;
+                  }
+                  MovementCompanion movement = MovementCompanion.insert(
+                    timestamp: DateFormat('dd/MM/yyyy').parse(_dateController.text),
+                    createdAt: DateTime.now(),
+                    isIncome: true,
+                    description: _descriptionController.text,
+                    value: double.parse(_valueController.text.replaceAll(',', '.')),
+                    categoryId: _selectedCategory!.id,
+                  );
+                  movementTableHelper.addTransaction(movement);
+                  setState(() {
+                    _fillTransactionContainer();
+                  });
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          );
+        },
+      );
+    },
+  );
+}
+
 
   Future<void> _selectDate() async {
     DateTime currentDate = DateFormat("dd/MM/yyyy").parse(_dateController.text);
