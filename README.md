@@ -2,6 +2,8 @@
 
 Financial Fitness Application
 
+Flutter version: 3.19.6
+
 ## Getting Started
 
 This project is a starting point for a Flutter application.

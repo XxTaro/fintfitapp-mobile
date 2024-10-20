@@ -1,7 +1,6 @@
-import 'dart:ffi';
 import 'dart:io';
 
-import 'package:fin_fit_app_mobile/helper/category_table_helper.dart';
+import 'package:fin_fit_app_mobile/helper/movement_table_helper.dart';
 import 'package:fin_fit_app_mobile/service/database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -17,12 +16,13 @@ class MainPage extends StatefulWidget {
 
 class _MainPage extends State<MainPage> {
   late Database _db;
+  late MovementTableHelper movementTableHelper;
 
   @override
   void initState() {
     super.initState();
     _db = DatabaseConnection.instance;
-    CategoryTableHelper categoryTableHelper = CategoryTableHelper(_db);
+    movementTableHelper = MovementTableHelper(_db);
   }
 
   @override
@@ -39,12 +39,47 @@ class _MainPage extends State<MainPage> {
                   "Olá!",
                   style: TextStyle(fontSize: 24),
                 )),
-            _buildCard("Saldo em ${returnMonth(DateTime.now())}", resumedCurrentMonthCardBody(-10000000)),
-            _buildCard("Teste 2", [Text("body")]),
+            FutureBuilder<List<double>>(
+              future: getCurrentMonthBalance(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  // Enquanto o Future ainda está sendo carregado, mostre um indicador de progresso ou algo semelhante
+                  return _buildCard('Carregando saldo...', [const CircularProgressIndicator()]);
+                } else if (snapshot.hasError) {
+                  // Caso ocorra algum erro, você pode mostrar uma mensagem de erro
+                  return _buildCard('Erro ao carregar o saldo', []);
+                } else if (snapshot.hasData) {
+                  // Quando o Future retornar os dados, você pode mostrar o card com o saldo
+                  final List<double> currentMonthBalance = snapshot.data ?? [0.0, 0.0];
+                  return _buildCard("Saldo em ${returnMonth(DateTime.now())}", resumedCurrentMonthCardBody(currentMonthBalance));
+                } else {
+                  return _buildCard('Nenhum dado disponível', []);
+                }
+              },
+            ),
           ],
         ),
       ),
     );
+  }
+
+  Future<List<double>> getCurrentMonthBalance() async {
+    List<MovementData> list = await Future.value(movementTableHelper.getByMonth(DateTime(
+      DateTime.now().year,
+      DateTime.now().month
+    )));
+
+    double negativeBalance = 0;
+    double positiveBalance = 0;
+
+    for (int i = 0 ; i < list.length ; i++) {
+      if (list[i].isIncome) {
+        positiveBalance += list[i].value;
+      } else {
+        negativeBalance += list[i].value;
+      }
+    }
+    return [positiveBalance, negativeBalance];
   }
 
   Widget _buildCard(String header, List<Widget> body) {
@@ -76,11 +111,15 @@ class _MainPage extends State<MainPage> {
     );
   }
 
-  List<Widget> resumedCurrentMonthCardBody(double currentMonthBalance) {
+  List<Widget> resumedCurrentMonthCardBody(List<double> currentMonthBalance) {
+    const int positiveIndex = 0;
+    const int negativeIndex = 1;
+    final positiveBalance = currentMonthBalance[positiveIndex];
+    final negativeBalance = currentMonthBalance[negativeIndex];
     return [
-      getMonthSummary(currentMonthBalance),
+      getMonthSummary(positiveBalance - negativeBalance),
       const SizedBox(height: 10,),
-      getMonthSummaryInputAndOutputFlow(1000, 2500)
+      getMonthSummaryInputAndOutputFlow(positiveBalance, negativeBalance)
     ];
   }
 
@@ -137,6 +176,6 @@ class _MainPage extends State<MainPage> {
   }
 
   String formattedNumberStr(double value) {
-    return NumberFormat.currency(locale: 'pt_BR', symbol: ' R\$').format(value);
+    return NumberFormat.currency(locale: 'pt_BR', symbol: ' R\$', decimalDigits: 2).format(value);
   }
 }
