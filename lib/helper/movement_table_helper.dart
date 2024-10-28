@@ -13,8 +13,8 @@ class MovementTableHelper extends DatabaseAccessor<Database> with _$MovementTabl
     return await into(movement).insert(entry);
   }
 
-  Future<List<MovementData>> getByStartsWithNameAndDate(String name, DateTime date) async {
-    return (await (select(movement)..where((tbl) => tbl.description.like('$name%') & tbl.timestamp.month.equals(date.month) & tbl.timestamp.year.equals(date.year))).get()).reversed.toList();
+  Future<List<MovementData>> getByContainsNameAndDate(String name, DateTime date) async {
+    return (await (select(movement)..where((tbl) => tbl.description.contains(name) & tbl.timestamp.month.equals(date.month) & tbl.timestamp.year.equals(date.year))).get()).reversed.toList();
   }
 
   Future<List<MovementData>> getByMonth(DateTime date) async {

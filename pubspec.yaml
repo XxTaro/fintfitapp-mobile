@@ -46,6 +46,7 @@ dependencies:
   material_symbols_icons: ^4.2744.0
   google_fonts: ^6.2.0 
   drift_flutter: ^0.2.0
+  popup_menu: ^2.1.0
 
 dev_dependencies:
   drift_dev: ^2.19.1

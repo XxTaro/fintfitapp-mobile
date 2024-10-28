@@ -9,6 +9,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter/services.dart';
+import 'package:popup_menu/popup_menu.dart';
 
 class TransactionPage extends StatefulWidget {
   const TransactionPage({super.key});
@@ -22,6 +23,7 @@ class _TransactionPage extends State<TransactionPage> {
   int _dateDiff = 0;
   CategoryData? _selectedCategory;
   String? _selectedGoal;
+  Offset? _tapPosition;
   
   late Database _db;
   late MovementTableHelper movementTableHelper;
@@ -55,46 +57,56 @@ class _TransactionPage extends State<TransactionPage> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      home: Scaffold(
-        body: SafeArea(
-          child: Column(
-            children: [
-              _buildTransactionHeader(),
-              _buildDateSelection(),
-              Expanded(child: Padding(
-                padding: const EdgeInsets.all(10),
-                child: _fillTransactionContainer()
-              ),),
-              Row(
-                children: [
-                  Expanded(
-                    flex: 80,
-                    child: Padding(
-                      padding: const EdgeInsets.only(left: 10, right: 10, bottom: 10),
-                      child: TextFormField(
-                        decoration: const InputDecoration(
-                          contentPadding: EdgeInsets.all(0),
-                          border: UnderlineInputBorder(),
-                          labelText: 'Procure pelo gasto desejado',
+    return GestureDetector(
+      onTapDown: (details) {
+        _tapPosition = details.globalPosition;
+        print('down');
+      },
+      onTapUp: (details) {
+        _tapPosition = details.globalPosition;
+        print('up');
+      },
+      child: MaterialApp(
+        home: Scaffold(
+          body: SafeArea(
+            child: Column(
+              children: [
+                _buildTransactionHeader(),
+                _buildDateSelection(),
+                Expanded(child: Padding(
+                  padding: const EdgeInsets.all(10),
+                  child: _fillTransactionContainer()
+                ),),
+                Row(
+                  children: [
+                    Expanded(
+                      flex: 80,
+                      child: Padding(
+                        padding: const EdgeInsets.only(left: 10, right: 10, bottom: 10),
+                        child: TextFormField(
+                          decoration: const InputDecoration(
+                            contentPadding: EdgeInsets.all(0),
+                            border: UnderlineInputBorder(),
+                            labelText: 'Procure pelo gasto desejado',
+                          ),
+                          onChanged: (String value) {
+                            _onSearchChanged(value);
+                          },
                         ),
-                        onChanged: (String value) {
-                          _onSearchChanged(value);
-                        },
-                      ),
-                    )
-                  ),
-                ],
-              )
-            ],
+                      )
+                    ),
+                  ],
+                )
+              ],
+            ),
           ),
         ),
-      ),
-    );
+      )
+    );  
   }
 
   Future<void> _onSearchChanged(String value) async {
-    List<MovementData> list = await movementTableHelper.getByStartsWithNameAndDate(
+    List<MovementData> list = await movementTableHelper.getByContainsNameAndDate(
       value, 
       DateTime(
         DateTime.now().year,
@@ -143,35 +155,76 @@ class _TransactionPage extends State<TransactionPage> {
         return Flexible(
           fit: FlexFit.loose,
           child: Container(
-            width: 500,
-            margin: const EdgeInsets.all(2.0),
-            padding: const EdgeInsets.all(16.0),
-            decoration: BoxDecoration(
-              color: Colors.grey[300],
-              borderRadius: BorderRadius.circular(6.0),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(DateFormat('dd/MM/yyyy').format(item.timestamp)),
-                const SizedBox(height: 5),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(children: [
-                      getInflowOrOutflowIcon(item.isIncome),
-                      const SizedBox(width: 5),
-                      Text(item.description, style: const TextStyle(fontSize: 18))
-                    ]),
-                    Text('R\$ ${item.value.toStringAsFixed(2).replaceAll(r'.', ',')}', style: const TextStyle(fontSize: 18)) 
-                  ]
+            margin: const EdgeInsets.all(2),
+            child: Material(
+              child: Ink(
+                width: 500,
+                decoration: BoxDecoration(
+                  color: Colors.grey[300],
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: InkWell(
+                  highlightColor: Colors.grey[700],
+                  borderRadius: BorderRadius.circular(6),
+                  onTap: () {
+                    // _showPopupMenu(_tapPosition!);
+                    print('tapped!');
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(DateFormat('dd/MM/yyyy').format(item.timestamp)),
+                        const SizedBox(height: 5),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Row(children: [
+                              getInflowOrOutflowIcon(item.isIncome),
+                              const SizedBox(width: 5),
+                              Text(item.description, style: const TextStyle(fontSize: 18))
+                            ]),
+                            Text('R\$ ${item.value.toStringAsFixed(2).replaceAll(r'.', ',')}', style: const TextStyle(fontSize: 18)) 
+                          ]
+                        )
+                      ],
+                    )
+                  )
                 )
-              ],
-            )
+              )
+            ),
           )
         );
       }).toList();
   }
+
+  void _showPopupMenu(Offset globalPosition) async {
+      await showMenu(
+        context: context,
+        position: RelativeRect.fromLTRB(globalPosition.dx, globalPosition.dy, globalPosition.dx, globalPosition.dy),
+        items: [
+          PopupMenuItem(
+            value: 1,
+            child: Text("View"),
+          ),
+          PopupMenuItem(
+             value: 2,
+            child: Text("Edit"),
+          ),
+          PopupMenuItem(
+            value: 3,
+            child: Text("Delete"),
+          ),
+        ],
+        elevation: 8.0,
+      ).then((value){
+
+      // NOTE: even you didnt select item this method will be called with null of value so you should call your call back with checking if value is not null , value is the value given in PopupMenuItem
+      if(value!=null)
+       print(value);
+       });
+    }
 
   Widget getInflowOrOutflowIcon(bool isIncome) {
     if (isIncome) {

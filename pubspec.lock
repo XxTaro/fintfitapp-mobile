@@ -555,6 +555,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.5.1"
+  popup_menu:
+    dependency: "direct main"
+    description:
+      name: popup_menu
+      sha256: "85fe2b7a0c43989307000d89f736718ebb2821eb11c7cf9bd409a1a4be39c3eb"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.1.0"
   pub_semver:
     dependency: transitive
     description:
