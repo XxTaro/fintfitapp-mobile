@@ -25,7 +25,7 @@ class _AuthCheckState extends State<AuthCheck> {
     return const InitialPage(title: "FinFitApp",);
   }
 
-  loading() {
+  Widget loading() {
     return const Scaffold(
       body: Center(
         child: CircularProgressIndicator(),

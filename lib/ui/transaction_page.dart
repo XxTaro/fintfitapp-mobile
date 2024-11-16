@@ -22,6 +22,7 @@ class _TransactionPage extends State<TransactionPage> {
   int _dateDiff = 0;
   CategoryData? _selectedCategory;
   String? _selectedGoal;
+  // ignore: unused_field
   Offset? _tapPosition;
   
   late Database _db;
@@ -59,11 +60,9 @@ class _TransactionPage extends State<TransactionPage> {
     return GestureDetector(
       onTapDown: (details) {
         _tapPosition = details.globalPosition;
-        print('down');
       },
       onTapUp: (details) {
         _tapPosition = details.globalPosition;
-        print('up');
       },
       child: MaterialApp(
         home: Scaffold(
@@ -88,9 +87,7 @@ class _TransactionPage extends State<TransactionPage> {
                             border: UnderlineInputBorder(),
                             labelText: 'Procure pelo gasto desejado',
                           ),
-                          onChanged: (String value) {
-                            _onSearchChanged(value);
-                          },
+                          onChanged: _onSearchChanged,
                         ),
                       )
                     ),
@@ -113,25 +110,21 @@ class _TransactionPage extends State<TransactionPage> {
       ),
     );
     transactions = list;
-    setState(() {
-      _fillTransactionContainer();
-    });
+    setState(_fillTransactionContainer);
   }
 
-  _setCategoriesList() async {
+  void _setCategoriesList() async {
     List<CategoryData> list = await Future.value(categoryTableHelper.getAllCategories());
     categories = list;
   }
 
-  _setMovementList() async {
+  void _setMovementList() async {
     List<MovementData> list = await Future.value(movementTableHelper.getByMonth(DateTime(
       DateTime.now().year,
       DateTime.now().month + _dateDiff
     )));
     transactions = list;
-    setState(() {
-      _fillTransactionContainer();
-    });
+    setState(_fillTransactionContainer);
   }
 
   Widget _fillTransactionContainer() {
@@ -167,7 +160,6 @@ class _TransactionPage extends State<TransactionPage> {
                   borderRadius: BorderRadius.circular(6),
                   onTap: () {
                     // _showPopupMenu(_tapPosition!);
-                    print('tapped!');
                   },
                   child: Padding(
                     padding: const EdgeInsets.all(16),
@@ -198,11 +190,12 @@ class _TransactionPage extends State<TransactionPage> {
       }).toList();
   }
 
+  // ignore: unused_element
   void _showPopupMenu(Offset globalPosition) async {
       await showMenu(
         context: context,
         position: RelativeRect.fromLTRB(globalPosition.dx, globalPosition.dy, globalPosition.dx, globalPosition.dy),
-        items: [
+        items: const[
           PopupMenuItem(
             value: 1,
             child: Text("View"),
@@ -218,11 +211,10 @@ class _TransactionPage extends State<TransactionPage> {
         ],
         elevation: 8.0,
       ).then((value){
-
-      // NOTE: even you didnt select item this method will be called with null of value so you should call your call back with checking if value is not null , value is the value given in PopupMenuItem
-      if(value!=null)
-       print(value);
-       });
+        // NOTE: even you didnt select item this method will be called with null of value so you should call your call back with checking if value is not null , value is the value given in PopupMenuItem
+        // ignore: avoid_print
+        if(value!=null) print(value);
+      });
     }
 
   Widget getInflowOrOutflowIcon(bool isIncome) {
@@ -284,9 +276,7 @@ class _TransactionPage extends State<TransactionPage> {
     final result = await _addTransactionDialog();
 
     if (result == true) {
-      setState(() {
-        _setMovementList(); // Atualiza a lista de transações
-      });
+      setState(_setMovementList);
     }
   }
 
@@ -343,7 +333,7 @@ class _TransactionPage extends State<TransactionPage> {
                       ),
                       const SizedBox(height: 20),
                       TextField(
-                        onTap: () => _selectDate(),
+                        onTap: _selectDate,
                         readOnly: true,
                         controller: _dateController,
                         decoration: const InputDecoration(

@@ -10,7 +10,7 @@ class AuthService extends ChangeNotifier {
     _authCheck();
   }
 
-  _authCheck() {
+  void _authCheck() {
     _auth.authStateChanges().listen((User? user) {
       user = user;
       isLoading = false;
@@ -18,7 +18,7 @@ class AuthService extends ChangeNotifier {
     });
   }
 
-  registerUser(String email, String password) async {
+  Future<void> register(String email, String password) async {
     try {
       await _auth.createUserWithEmailAndPassword(email: email, password: password);
       _getUser();
@@ -31,7 +31,7 @@ class AuthService extends ChangeNotifier {
     }
   }
 
-  login(String email, String password) async {
+  Future<void> login(String email, String password) async {
     try {
       await _auth.signInWithEmailAndPassword(email: email, password: password);
       _getUser();
@@ -44,12 +44,12 @@ class AuthService extends ChangeNotifier {
     }
   }
 
-  logout() {
+  void logout() {
     _auth.signOut();
     _getUser();
   }
 
-  _getUser() {
+  void _getUser() {
     user = _auth.currentUser;
     notifyListeners();
   }

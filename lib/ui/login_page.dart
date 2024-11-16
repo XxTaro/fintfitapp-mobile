@@ -26,7 +26,7 @@ class _LoginPageState extends State<LoginPage> {
     setFormAction(true);
   }
 
-  setFormAction(bool action) {
+  void setFormAction(bool action) {
     setState(() {
       isLogin = action;
 
@@ -113,7 +113,7 @@ class _LoginPageState extends State<LoginPage> {
                       },
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
-                        children: (loading) 
+                        children: loading
                         ? [
                           const Padding(
                             padding: EdgeInsets.all(16),
@@ -160,16 +160,18 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  login() async {
+  void login() async {
     setState(() => loading = true);
       try {
         await context.read<AuthService>().login(emailController.text, passwordController.text);
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
           content: Text("Login efetuado com sucesso!"),
           backgroundColor: Colors.green,
         ));
       } on AuthException catch (e) {
         setState(() => loading = false);
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text(e.message),
           backgroundColor: Colors.red,
@@ -177,16 +179,18 @@ class _LoginPageState extends State<LoginPage> {
       }
   }
 
-  register() async {
+  void register() async {
     setState(() => loading = true);
     try {
-        await context.read<AuthService>().registerUser(emailController.text, passwordController.text);
+        await context.read<AuthService>().register(emailController.text, passwordController.text);
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
           content: Text("Cadastro efetuado com sucesso!"),
           backgroundColor: Colors.green,
         ));
       } on AuthException catch (e) {
         setState(() => loading = false);
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text(e.message),
           backgroundColor: Colors.red,

@@ -29,9 +29,7 @@ class MenuPageStateState extends State<MenuPageState> {
                     child: InkWell(
                       highlightColor: Colors.grey[300],
                       borderRadius: BorderRadius.circular(6),
-                      onTap: () {
-                        print('tapped!');
-                      },
+                      onTap: () {},
                       child: ListTile(
                         title: Text(MenuItems.values[index].title),
                         subtitle: Text(MenuItems.values[index].description),
