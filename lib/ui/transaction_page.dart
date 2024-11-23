@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:drift/drift.dart' show Value;
 import 'package:fin_fit_app_mobile/helper/category_table_helper.dart';
 import 'package:fin_fit_app_mobile/helper/movement_table_helper.dart';
 import 'package:fin_fit_app_mobile/service/database.dart';
@@ -22,8 +23,9 @@ class _TransactionPage extends State<TransactionPage> {
   int _dateDiff = 0;
   CategoryData? _selectedCategory;
   String? _selectedGoal;
-  // ignore: unused_field
-  Offset? _tapPosition;
+
+  static const int editTransaction = 1;
+  static const int deleteTransaction = 2;
   
   late Database _db;
   late MovementTableHelper movementTableHelper;
@@ -31,6 +33,8 @@ class _TransactionPage extends State<TransactionPage> {
   late List<CategoryData> categories;
   late List<Widget> containers = [];
   late List<MovementData> transactions = [];
+  late String title;
+  late String actionButton;
  
   final TextEditingController _dateController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
@@ -57,47 +61,39 @@ class _TransactionPage extends State<TransactionPage> {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTapDown: (details) {
-        _tapPosition = details.globalPosition;
-      },
-      onTapUp: (details) {
-        _tapPosition = details.globalPosition;
-      },
-      child: MaterialApp(
-        home: Scaffold(
-          body: SafeArea(
-            child: Column(
-              children: [
-                _buildTransactionHeader(),
-                _buildDateSelection(),
-                Expanded(child: Padding(
-                  padding: const EdgeInsets.all(10),
-                  child: _fillTransactionContainer()
-                ),),
-                Row(
-                  children: [
-                    Expanded(
-                      flex: 80,
-                      child: Padding(
-                        padding: const EdgeInsets.only(left: 10, right: 10, bottom: 10),
-                        child: TextFormField(
-                          decoration: const InputDecoration(
-                            contentPadding: EdgeInsets.all(0),
-                            border: UnderlineInputBorder(),
-                            labelText: 'Procure pelo gasto desejado',
-                          ),
-                          onChanged: _onSearchChanged,
+    return MaterialApp(
+      home: Scaffold(
+        body: SafeArea(
+          child: Column(
+            children: [
+              _buildTransactionHeader(),
+              _buildDateSelection(),
+              Expanded(child: Padding(
+                padding: const EdgeInsets.all(10),
+                child: _fillTransactionContainer()
+              ),),
+              Row(
+                children: [
+                  Expanded(
+                    flex: 80,
+                    child: Padding(
+                      padding: const EdgeInsets.only(left: 10, right: 10, bottom: 10),
+                      child: TextFormField(
+                        decoration: const InputDecoration(
+                          contentPadding: EdgeInsets.all(0),
+                          border: UnderlineInputBorder(),
+                          labelText: 'Procure pelo gasto desejado',
                         ),
-                      )
-                    ),
-                  ],
-                )
-              ],
-            ),
+                        onChanged: _onSearchChanged,
+                      ),
+                    )
+                  ),
+                ],
+              )
+            ],
           ),
         ),
-      )
+      ),
     );  
   }
 
@@ -158,9 +154,7 @@ class _TransactionPage extends State<TransactionPage> {
                 child: InkWell(
                   highlightColor: Colors.grey[700],
                   borderRadius: BorderRadius.circular(6),
-                  onTap: () {
-                    // _showPopupMenu(_tapPosition!);
-                  },
+                  onTapDown: (details) async => await _showPopupMenu(details.globalPosition, item),
                   child: Padding(
                     padding: const EdgeInsets.all(16),
                     child: Column(
@@ -190,32 +184,53 @@ class _TransactionPage extends State<TransactionPage> {
       }).toList();
   }
 
-  // ignore: unused_element
-  void _showPopupMenu(Offset globalPosition) async {
-      await showMenu(
-        context: context,
-        position: RelativeRect.fromLTRB(globalPosition.dx, globalPosition.dy, globalPosition.dx, globalPosition.dy),
-        items: const[
-          PopupMenuItem(
-            value: 1,
-            child: Text("View"),
-          ),
-          PopupMenuItem(
-             value: 2,
-            child: Text("Edit"),
-          ),
-          PopupMenuItem(
-            value: 3,
-            child: Text("Delete"),
-          ),
-        ],
-        elevation: 8.0,
-      ).then((value){
-        // NOTE: even you didnt select item this method will be called with null of value so you should call your call back with checking if value is not null , value is the value given in PopupMenuItem
-        // ignore: avoid_print
-        if(value!=null) print(value);
-      });
-    }
+  void setTransactionDialogText(bool isToAdd) {
+    if (isToAdd) {
+      title = "Adicionar transação";
+      actionButton = "Adicionar";
+      return;
+    } 
+    title = "Editar transação";
+    actionButton = "Editar";
+  }
+
+  Future<void> _showPopupMenu(Offset globalPosition, MovementData item) async {
+    await showMenu(
+      context: context,
+      position: RelativeRect.fromLTRB(globalPosition.dx, globalPosition.dy, globalPosition.dx, globalPosition.dy),
+      items: const[
+        PopupMenuItem(
+           value: editTransaction,
+          child: Text("Editar"),
+        ),
+        PopupMenuItem(
+          value: deleteTransaction,
+          child: Text("Deletar"),
+        ),
+      ],
+      elevation: 8.0,
+    ).then((value) async {
+      if (value == null) return;
+      switch (value) {
+        case editTransaction:
+          _setFields(item);
+          _showAddOrEditTransactionDialog(false, item);
+          break;
+        case deleteTransaction:
+          _showDeleteTransactionDialog(item);
+          break;
+      }
+    });
+  }
+
+  void _setFields(MovementData item) async {
+    _descriptionController.text = item.description;
+    _valueController.text = item.value.toStringAsFixed(2).replaceAll(r'.', ',');
+    _dateController.text = DateFormat('dd/MM/yyyy').format(item.timestamp);
+    _selectedGoal = null;
+    _selectedCategory = await categoryTableHelper.getById(item.categoryId);
+    isEntryOrExit = [item.isIncome, !item.isIncome];
+  }
 
   Widget getInflowOrOutflowIcon(bool isIncome) {
     if (isIncome) {
@@ -262,7 +277,7 @@ class _TransactionPage extends State<TransactionPage> {
                 _selectedGoal = null;
                 _selectedCategory = null;
                 isEntryOrExit = [true, false];
-                _showAddTransactionDialog();
+                _showAddOrEditTransactionDialog(true, null);
               }, 
               icon: const Icon(Icons.add, size: 28)
             )
@@ -272,18 +287,24 @@ class _TransactionPage extends State<TransactionPage> {
     );
   }
 
-  Future<void> _showAddTransactionDialog() async {
-    final result = await _addTransactionDialog();
+  Future<void> _showAddOrEditTransactionDialog(bool isToAdd, MovementData? item) async {
+    setTransactionDialogText(isToAdd);
+    final result = await _addOrEditTransactionDialog(isToAdd, item);
 
-    if (result == true) {
-      setState(_setMovementList);
+    if (result == true && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text("Transação salva!"),
+          backgroundColor: Colors.green,
+        )
+      );
+      _setMovementList();
     }
   }
 
-  Future<bool?> _addTransactionDialog() async {
+  Future<bool?> _addOrEditTransactionDialog(bool isToAdd, MovementData? item) async {
     return showDialog<bool?>(
       context: context,
-      barrierDismissible: false, // user must tap button!
+      barrierDismissible: false,
       builder: (BuildContext context) {
         return StatefulBuilder(
           builder: (BuildContext context, StateSetter setState) {
@@ -295,7 +316,7 @@ class _TransactionPage extends State<TransactionPage> {
               insetPadding: EdgeInsets.zero,
               contentPadding: const EdgeInsets.only(left: 24, right: 24, top: 24, bottom: 24),
               clipBehavior: Clip.antiAliasWithSaveLayer,
-              title: const Text('Adicionar transação'),
+              title: Text(title),
               content: SizedBox(
                 width: MediaQuery.of(context).size.width * 0.8,
                 child: SingleChildScrollView(
@@ -427,24 +448,13 @@ class _TransactionPage extends State<TransactionPage> {
                   },
                 ),
                 TextButton(
-                  child: const Text('Adicionar'),
+                  child: Text(actionButton),
                   onPressed: () {
-                    if (_dateController.text.isEmpty ||
-                        _selectedCategory == null ||
-                        _descriptionController.text.isEmpty ||
-                        _valueController.text.isEmpty) {
-                      return;
+                    if (isToAdd) {
+                      _addTransaction();
+                    } else {
+                      _editTransaction(item);
                     }
-                    MovementCompanion movement = MovementCompanion.insert(
-                      timestamp: DateFormat('dd/MM/yyyy').parse(_dateController.text),
-                      createdAt: DateTime.now(),
-                      isIncome: isEntryOrExit[0],
-                      description: _descriptionController.text,
-                      value: double.parse(_valueController.text.replaceAll(',', '.')),
-                      categoryId: _selectedCategory!.id,
-                    );
-
-                    movementTableHelper.addTransaction(movement);
 
                     Navigator.of(context).pop(true);
                   },
@@ -457,6 +467,97 @@ class _TransactionPage extends State<TransactionPage> {
     );
   }
 
+  void _editTransaction(MovementData? item) {
+    if (_dateController.text.isEmpty ||
+        _selectedCategory == null ||
+        _descriptionController.text.isEmpty ||
+        _valueController.text.isEmpty) {
+      return;
+    }
+
+    MovementCompanion movement = MovementCompanion.insert(
+      id: Value(item!.id),
+      timestamp: DateFormat('dd/MM/yyyy').parse(_dateController.text),
+      createdAt: item.createdAt,
+      updatedAt: DateTime.now(),
+      isIncome: isEntryOrExit[0],
+      description: _descriptionController.text,
+      value: double.parse(_valueController.text.replaceAll(',', '.')),
+      categoryId: _selectedCategory!.id,
+    );
+
+    movementTableHelper.updateTransaction(movement);
+  }
+
+  void _addTransaction() {
+    if (_dateController.text.isEmpty ||
+        _selectedCategory == null ||
+        _descriptionController.text.isEmpty ||
+        _valueController.text.isEmpty) {
+      return;
+    }
+    MovementCompanion movement = MovementCompanion.insert(
+      timestamp: DateFormat('dd/MM/yyyy').parse(_dateController.text),
+      createdAt: DateTime.now(),
+      updatedAt: DateTime.now(),
+      isIncome: isEntryOrExit[0],
+      description: _descriptionController.text,
+      value: double.parse(_valueController.text.replaceAll(',', '.')),
+      categoryId: _selectedCategory!.id,
+    );
+
+    movementTableHelper.addTransaction(movement);
+  }
+
+  Future<void> _showDeleteTransactionDialog(MovementData item) async {
+    final result = await _deleteTransactionDialog(item);
+
+    if (result == true && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text("Transação deletada!"),
+          backgroundColor: Colors.red,
+        )
+      );
+      _setMovementList();
+    } 
+  }
+
+  Future<bool?> _deleteTransactionDialog(MovementData item) async {
+    return showDialog<bool?>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (BuildContext context, StateSetter setState) {
+            return AlertDialog(
+              shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(Radius.circular(5)),
+              ),
+              backgroundColor: Colors.white,
+              insetPadding: EdgeInsets.zero,
+              title: const Text('Deletar transação'),
+              content: const Text('Você deseja realmente deletar essa transação?\n\nEssa ação não poderá ser desfeita.'),
+              actions: <Widget>[
+                TextButton(
+                  child: const Text('Não'),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                ),
+                TextButton(
+                  child: const Text('Sim'),
+                  onPressed: () {
+                    movementTableHelper.deleteTransaction(item.id);
+                    Navigator.of(context).pop(true);
+                  },
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
 
   Future<void> _selectDate() async {
     DateTime currentDate = DateFormat("dd/MM/yyyy").parse(_dateController.text);

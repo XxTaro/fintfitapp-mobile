@@ -601,8 +601,8 @@ class $MovementTable extends Movement
       const VerificationMeta('updatedAt');
   @override
   late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
-      'updated_at', aliasedName, true,
-      type: DriftSqlType.dateTime, requiredDuringInsert: false);
+      'updated_at', aliasedName, false,
+      type: DriftSqlType.dateTime, requiredDuringInsert: true);
   static const VerificationMeta _goalIdMeta = const VerificationMeta('goalId');
   @override
   late final GeneratedColumn<int> goalId = GeneratedColumn<int>(
@@ -676,6 +676,8 @@ class $MovementTable extends Movement
     if (data.containsKey('updated_at')) {
       context.handle(_updatedAtMeta,
           updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta));
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
     }
     if (data.containsKey('goal_id')) {
       context.handle(_goalIdMeta,
@@ -705,7 +707,7 @@ class $MovementTable extends Movement
       createdAt: attachedDatabase.typeMapping
           .read(DriftSqlType.dateTime, data['${effectivePrefix}created_at'])!,
       updatedAt: attachedDatabase.typeMapping
-          .read(DriftSqlType.dateTime, data['${effectivePrefix}updated_at']),
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}updated_at'])!,
       goalId: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}goal_id']),
     );
@@ -725,7 +727,7 @@ class MovementData extends DataClass implements Insertable<MovementData> {
   final int categoryId;
   final DateTime timestamp;
   final DateTime createdAt;
-  final DateTime? updatedAt;
+  final DateTime updatedAt;
   final int? goalId;
   const MovementData(
       {required this.id,
@@ -735,7 +737,7 @@ class MovementData extends DataClass implements Insertable<MovementData> {
       required this.categoryId,
       required this.timestamp,
       required this.createdAt,
-      this.updatedAt,
+      required this.updatedAt,
       this.goalId});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -747,9 +749,7 @@ class MovementData extends DataClass implements Insertable<MovementData> {
     map['category_id'] = Variable<int>(categoryId);
     map['timestamp'] = Variable<DateTime>(timestamp);
     map['created_at'] = Variable<DateTime>(createdAt);
-    if (!nullToAbsent || updatedAt != null) {
-      map['updated_at'] = Variable<DateTime>(updatedAt);
-    }
+    map['updated_at'] = Variable<DateTime>(updatedAt);
     if (!nullToAbsent || goalId != null) {
       map['goal_id'] = Variable<int>(goalId);
     }
@@ -765,9 +765,7 @@ class MovementData extends DataClass implements Insertable<MovementData> {
       categoryId: Value(categoryId),
       timestamp: Value(timestamp),
       createdAt: Value(createdAt),
-      updatedAt: updatedAt == null && nullToAbsent
-          ? const Value.absent()
-          : Value(updatedAt),
+      updatedAt: Value(updatedAt),
       goalId:
           goalId == null && nullToAbsent ? const Value.absent() : Value(goalId),
     );
@@ -784,7 +782,7 @@ class MovementData extends DataClass implements Insertable<MovementData> {
       categoryId: serializer.fromJson<int>(json['categoryId']),
       timestamp: serializer.fromJson<DateTime>(json['timestamp']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
-      updatedAt: serializer.fromJson<DateTime?>(json['updatedAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
       goalId: serializer.fromJson<int?>(json['goalId']),
     );
   }
@@ -799,7 +797,7 @@ class MovementData extends DataClass implements Insertable<MovementData> {
       'categoryId': serializer.toJson<int>(categoryId),
       'timestamp': serializer.toJson<DateTime>(timestamp),
       'createdAt': serializer.toJson<DateTime>(createdAt),
-      'updatedAt': serializer.toJson<DateTime?>(updatedAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
       'goalId': serializer.toJson<int?>(goalId),
     };
   }
@@ -812,7 +810,7 @@ class MovementData extends DataClass implements Insertable<MovementData> {
           int? categoryId,
           DateTime? timestamp,
           DateTime? createdAt,
-          Value<DateTime?> updatedAt = const Value.absent(),
+          DateTime? updatedAt,
           Value<int?> goalId = const Value.absent()}) =>
       MovementData(
         id: id ?? this.id,
@@ -822,7 +820,7 @@ class MovementData extends DataClass implements Insertable<MovementData> {
         categoryId: categoryId ?? this.categoryId,
         timestamp: timestamp ?? this.timestamp,
         createdAt: createdAt ?? this.createdAt,
-        updatedAt: updatedAt.present ? updatedAt.value : this.updatedAt,
+        updatedAt: updatedAt ?? this.updatedAt,
         goalId: goalId.present ? goalId.value : this.goalId,
       );
   MovementData copyWithCompanion(MovementCompanion data) {
@@ -883,7 +881,7 @@ class MovementCompanion extends UpdateCompanion<MovementData> {
   final Value<int> categoryId;
   final Value<DateTime> timestamp;
   final Value<DateTime> createdAt;
-  final Value<DateTime?> updatedAt;
+  final Value<DateTime> updatedAt;
   final Value<int?> goalId;
   const MovementCompanion({
     this.id = const Value.absent(),
@@ -904,14 +902,15 @@ class MovementCompanion extends UpdateCompanion<MovementData> {
     required int categoryId,
     required DateTime timestamp,
     required DateTime createdAt,
-    this.updatedAt = const Value.absent(),
+    required DateTime updatedAt,
     this.goalId = const Value.absent(),
   })  : description = Value(description),
         isIncome = Value(isIncome),
         value = Value(value),
         categoryId = Value(categoryId),
         timestamp = Value(timestamp),
-        createdAt = Value(createdAt);
+        createdAt = Value(createdAt),
+        updatedAt = Value(updatedAt);
   static Insertable<MovementData> custom({
     Expression<int>? id,
     Expression<String>? description,
@@ -944,7 +943,7 @@ class MovementCompanion extends UpdateCompanion<MovementData> {
       Value<int>? categoryId,
       Value<DateTime>? timestamp,
       Value<DateTime>? createdAt,
-      Value<DateTime?>? updatedAt,
+      Value<DateTime>? updatedAt,
       Value<int?>? goalId}) {
     return MovementCompanion(
       id: id ?? this.id,
@@ -1244,7 +1243,7 @@ typedef $$MovementTableCreateCompanionBuilder = MovementCompanion Function({
   required int categoryId,
   required DateTime timestamp,
   required DateTime createdAt,
-  Value<DateTime?> updatedAt,
+  required DateTime updatedAt,
   Value<int?> goalId,
 });
 typedef $$MovementTableUpdateCompanionBuilder = MovementCompanion Function({
@@ -1255,7 +1254,7 @@ typedef $$MovementTableUpdateCompanionBuilder = MovementCompanion Function({
   Value<int> categoryId,
   Value<DateTime> timestamp,
   Value<DateTime> createdAt,
-  Value<DateTime?> updatedAt,
+  Value<DateTime> updatedAt,
   Value<int?> goalId,
 });
 
@@ -1283,7 +1282,7 @@ class $$MovementTableTableManager extends RootTableManager<
             Value<int> categoryId = const Value.absent(),
             Value<DateTime> timestamp = const Value.absent(),
             Value<DateTime> createdAt = const Value.absent(),
-            Value<DateTime?> updatedAt = const Value.absent(),
+            Value<DateTime> updatedAt = const Value.absent(),
             Value<int?> goalId = const Value.absent(),
           }) =>
               MovementCompanion(
@@ -1305,7 +1304,7 @@ class $$MovementTableTableManager extends RootTableManager<
             required int categoryId,
             required DateTime timestamp,
             required DateTime createdAt,
-            Value<DateTime?> updatedAt = const Value.absent(),
+            required DateTime updatedAt,
             Value<int?> goalId = const Value.absent(),
           }) =>
               MovementCompanion.insert(

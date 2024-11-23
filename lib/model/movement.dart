@@ -8,6 +8,6 @@ class Movement extends Table {
   IntColumn get categoryId => integer()();
   DateTimeColumn get timestamp => dateTime()();
   DateTimeColumn get createdAt => dateTime()();
-  DateTimeColumn get updatedAt => dateTime().nullable()();
+  DateTimeColumn get updatedAt => dateTime()();
   IntColumn get goalId => integer().nullable()();
 }

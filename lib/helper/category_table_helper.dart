@@ -17,4 +17,8 @@ class CategoryTableHelper extends DatabaseAccessor<Database> with _$CategoryTabl
   Future<List<CategoryData>> getAllCategories() async {
     return await select(category).get();
   }
+
+  Future<CategoryData> getById(int id) async {
+    return await (select(category)..where((tbl) => tbl.id.equals(id))).getSingle();
+  }
 }
