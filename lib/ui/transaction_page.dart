@@ -22,6 +22,8 @@ class _TransactionPage extends State<TransactionPage> {
   String date = "date";
   int _dateDiff = 0;
   CategoryData? _selectedCategory;
+  CategoryData? _selectedFilterCategory;
+  CategoryData? _oldSelectedFilterCategory;
   String? _selectedGoal;
 
   static const int editTransaction = 1;
@@ -119,6 +121,15 @@ class _TransactionPage extends State<TransactionPage> {
       DateTime.now().year,
       DateTime.now().month + _dateDiff
     )));
+    transactions = list;
+    setState(_fillTransactionContainer);
+  }
+
+  void _setFilteredMovementList(CategoryData? categoryData) async {
+    List<MovementData> list = await Future.value(movementTableHelper.getByMonthAndCategory(DateTime(
+      DateTime.now().year,
+      DateTime.now().month + _dateDiff
+    ), categoryData));
     transactions = list;
     setState(_fillTransactionContainer);
   }
@@ -262,8 +273,10 @@ class _TransactionPage extends State<TransactionPage> {
           Positioned(
             left: 0, 
             child: IconButton(
-              onPressed: () => {},
-              icon: const Icon(Icons.filter_alt_off, size: 28),
+              onPressed: () {
+                _showFilterTransactionDialog();
+              },
+              icon: (_selectedFilterCategory == null) ? const Icon(Icons.filter_alt_off, size: 28) : const Icon(Icons.filter_alt_rounded, size: 28),
             ) 
           ),
           Positioned(
@@ -456,6 +469,92 @@ class _TransactionPage extends State<TransactionPage> {
                       _editTransaction(item);
                     }
 
+                    Navigator.of(context).pop(true);
+                  },
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Future<void> _showFilterTransactionDialog() async {
+    final result = await _filterTransactionDialog();
+
+    if (result == true && mounted) {
+      _setFilteredMovementList(_selectedFilterCategory);
+    }
+  }
+
+  Future<bool?> _filterTransactionDialog() async {
+    return showDialog<bool?>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (BuildContext context, StateSetter setState) {
+            return AlertDialog(
+              shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(Radius.circular(5)),
+              ),
+              backgroundColor: Colors.white,
+              insetPadding: EdgeInsets.zero,
+              contentPadding: const EdgeInsets.only(left: 24, right: 24, top: 24, bottom: 24),
+              clipBehavior: Clip.antiAliasWithSaveLayer,
+              title: const Text("Filtrar transações"),
+              content: SizedBox(
+                width: MediaQuery.of(context).size.width * 0.8,
+                child: SingleChildScrollView(
+                  padding: EdgeInsets.zero,
+                  child: ListBody(
+                    children: <Widget>[
+                      DropdownButtonFormField(
+                        decoration: const InputDecoration(
+                          filled: true,
+                          prefixIcon: Icon(Symbols.target, weight: 700),
+                          border: UnderlineInputBorder(),
+                          label: Text('Categoria'),
+                        ),
+                        menuMaxHeight: 250,
+                        value: _selectedFilterCategory,
+                        isExpanded: true,
+                        items: categories.map((CategoryData category) {
+                          return DropdownMenuItem(
+                            value: category,
+                            child: Text(category.name),
+                          );
+                        }).toList(),
+                        onChanged: (value) {
+                          setState(() {
+                            _selectedFilterCategory = value as CategoryData;
+                          });
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              actions: <Widget>[
+                TextButton(
+                  child: const Text('Cancelar'),
+                  onPressed: () {
+                    _selectedFilterCategory = _oldSelectedFilterCategory;
+                    Navigator.of(context).pop();
+                  },
+                ),
+                TextButton(
+                  child: const Text('Limpar'),
+                  onPressed: () {
+                    _selectedFilterCategory = null;
+                    Navigator.of(context).pop(true);
+                  },
+                ),
+                TextButton(
+                  child: const Text('Salvar'),
+                  onPressed: () {
+                    _oldSelectedFilterCategory = _selectedFilterCategory;
                     Navigator.of(context).pop(true);
                   },
                 ),
