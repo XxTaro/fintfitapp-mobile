@@ -273,9 +273,7 @@ class _TransactionPage extends State<TransactionPage> {
           Positioned(
             left: 0, 
             child: IconButton(
-              onPressed: () {
-                _showFilterTransactionDialog();
-              },
+              onPressed: _showFilterTransactionDialog,
               icon: (_selectedFilterCategory == null) ? const Icon(Icons.filter_alt_off, size: 28) : const Icon(Icons.filter_alt_rounded, size: 28),
             ) 
           ),

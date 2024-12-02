@@ -24,7 +24,7 @@ class MainPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Finantial Fitness App',
       theme: ThemeData(
         fontFamily: GoogleFonts.cabin().fontFamily,
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
