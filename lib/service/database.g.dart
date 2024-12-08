@@ -15,7 +15,7 @@ class $CategoryTable extends Category
       'id', aliasedName, false,
       hasAutoIncrement: true,
       type: DriftSqlType.int,
-      requiredDuringInsert: true,
+      requiredDuringInsert: false,
       defaultConstraints:
           GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
   static const VerificationMeta _nameMeta = const VerificationMeta('name');
@@ -40,8 +40,6 @@ class $CategoryTable extends Category
     final data = instance.toColumns(true);
     if (data.containsKey('id')) {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
-    } else if (isInserting) {
-      context.missing(_idMeta);
     }
     if (data.containsKey('name')) {
       context.handle(
@@ -53,7 +51,7 @@ class $CategoryTable extends Category
   }
 
   @override
-  Set<GeneratedColumn> get $primaryKey => {id, name};
+  Set<GeneratedColumn> get $primaryKey => {id};
   @override
   CategoryData map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
@@ -138,36 +136,28 @@ class CategoryData extends DataClass implements Insertable<CategoryData> {
 class CategoryCompanion extends UpdateCompanion<CategoryData> {
   final Value<int> id;
   final Value<String> name;
-  final Value<int> rowid;
   const CategoryCompanion({
     this.id = const Value.absent(),
     this.name = const Value.absent(),
-    this.rowid = const Value.absent(),
   });
   CategoryCompanion.insert({
-    required int id,
+    this.id = const Value.absent(),
     required String name,
-    this.rowid = const Value.absent(),
-  })  : id = Value(id),
-        name = Value(name);
+  }) : name = Value(name);
   static Insertable<CategoryData> custom({
     Expression<int>? id,
     Expression<String>? name,
-    Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (name != null) 'name': name,
-      if (rowid != null) 'rowid': rowid,
     });
   }
 
-  CategoryCompanion copyWith(
-      {Value<int>? id, Value<String>? name, Value<int>? rowid}) {
+  CategoryCompanion copyWith({Value<int>? id, Value<String>? name}) {
     return CategoryCompanion(
       id: id ?? this.id,
       name: name ?? this.name,
-      rowid: rowid ?? this.rowid,
     );
   }
 
@@ -180,9 +170,6 @@ class CategoryCompanion extends UpdateCompanion<CategoryData> {
     if (name.present) {
       map['name'] = Variable<String>(name.value);
     }
-    if (rowid.present) {
-      map['rowid'] = Variable<int>(rowid.value);
-    }
     return map;
   }
 
@@ -190,8 +177,7 @@ class CategoryCompanion extends UpdateCompanion<CategoryData> {
   String toString() {
     return (StringBuffer('CategoryCompanion(')
           ..write('id: $id, ')
-          ..write('name: $name, ')
-          ..write('rowid: $rowid')
+          ..write('name: $name')
           ..write(')'))
         .toString();
   }
@@ -1023,14 +1009,12 @@ abstract class _$Database extends GeneratedDatabase {
 }
 
 typedef $$CategoryTableCreateCompanionBuilder = CategoryCompanion Function({
-  required int id,
+  Value<int> id,
   required String name,
-  Value<int> rowid,
 });
 typedef $$CategoryTableUpdateCompanionBuilder = CategoryCompanion Function({
   Value<int> id,
   Value<String> name,
-  Value<int> rowid,
 });
 
 class $$CategoryTableTableManager extends RootTableManager<
@@ -1052,22 +1036,18 @@ class $$CategoryTableTableManager extends RootTableManager<
           updateCompanionCallback: ({
             Value<int> id = const Value.absent(),
             Value<String> name = const Value.absent(),
-            Value<int> rowid = const Value.absent(),
           }) =>
               CategoryCompanion(
             id: id,
             name: name,
-            rowid: rowid,
           ),
           createCompanionCallback: ({
-            required int id,
+            Value<int> id = const Value.absent(),
             required String name,
-            Value<int> rowid = const Value.absent(),
           }) =>
               CategoryCompanion.insert(
             id: id,
             name: name,
-            rowid: rowid,
           ),
         ));
 }

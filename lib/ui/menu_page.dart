@@ -28,6 +28,10 @@ class MenuPageStateState extends State<MenuPageState> {
     );
   }
 
+  set menuPage(StatefulWidget? page) {
+    this.page = page;
+  }
+
   List<Widget> menuItems() {
     return [
       Expanded(
@@ -87,7 +91,7 @@ class MenuPageStateState extends State<MenuPageState> {
 }
 
 enum MenuItems {
-  logout("Personalizar categorias", "Criar, editar ou remover categorias de transações", Icon(Icons.edit), PersonalizeCategoryPage()),;
+  logout("Personalizar categorias", "Criar, editar ou remover categorias", Icon(Icons.edit), PersonalizeCategoryPage()),;
 
   final String title;
   final String description;
