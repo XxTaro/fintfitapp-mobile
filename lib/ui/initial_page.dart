@@ -1,3 +1,4 @@
+import 'package:fin_fit_app_mobile/ui/chat_screen.dart';
 import 'package:fin_fit_app_mobile/ui/main_page.dart';
 import 'package:fin_fit_app_mobile/ui/menu_page.dart';
 import 'package:fin_fit_app_mobile/ui/transaction_page.dart';
@@ -21,7 +22,8 @@ class _InitialPageState extends State<InitialPage> {
     const MainPage(),
     const TransactionPage(),
     SvgPicture.asset("assets/ic_target_24.svg", height: 24, width: 24),
-    const MenuPageState()
+    const MenuPageState(),
+    const ChatScreen()
   ];
 
   @override
@@ -50,7 +52,10 @@ class _InitialPageState extends State<InitialPage> {
                 label: "Menu",
                 icon: Icon(Icons.menu)
             ),
-            
+            BottomNavigationBarItem(
+                label: "Chat",
+                icon: Icon(Icons.chat)
+            ),
           ],
         ),
         body: Center(

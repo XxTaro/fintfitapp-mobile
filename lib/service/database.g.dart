@@ -1017,22 +1017,76 @@ typedef $$CategoryTableUpdateCompanionBuilder = CategoryCompanion Function({
   Value<String> name,
 });
 
+class $$CategoryTableFilterComposer
+    extends Composer<_$Database, $CategoryTable> {
+  $$CategoryTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get name => $composableBuilder(
+      column: $table.name, builder: (column) => ColumnFilters(column));
+}
+
+class $$CategoryTableOrderingComposer
+    extends Composer<_$Database, $CategoryTable> {
+  $$CategoryTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get name => $composableBuilder(
+      column: $table.name, builder: (column) => ColumnOrderings(column));
+}
+
+class $$CategoryTableAnnotationComposer
+    extends Composer<_$Database, $CategoryTable> {
+  $$CategoryTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+}
+
 class $$CategoryTableTableManager extends RootTableManager<
     _$Database,
     $CategoryTable,
     CategoryData,
     $$CategoryTableFilterComposer,
     $$CategoryTableOrderingComposer,
+    $$CategoryTableAnnotationComposer,
     $$CategoryTableCreateCompanionBuilder,
-    $$CategoryTableUpdateCompanionBuilder> {
+    $$CategoryTableUpdateCompanionBuilder,
+    (CategoryData, BaseReferences<_$Database, $CategoryTable, CategoryData>),
+    CategoryData,
+    PrefetchHooks Function()> {
   $$CategoryTableTableManager(_$Database db, $CategoryTable table)
       : super(TableManagerState(
           db: db,
           table: table,
-          filteringComposer:
-              $$CategoryTableFilterComposer(ComposerState(db, table)),
-          orderingComposer:
-              $$CategoryTableOrderingComposer(ComposerState(db, table)),
+          createFilteringComposer: () =>
+              $$CategoryTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$CategoryTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$CategoryTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
             Value<int> id = const Value.absent(),
             Value<String> name = const Value.absent(),
@@ -1049,37 +1103,25 @@ class $$CategoryTableTableManager extends RootTableManager<
             id: id,
             name: name,
           ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
         ));
 }
 
-class $$CategoryTableFilterComposer
-    extends FilterComposer<_$Database, $CategoryTable> {
-  $$CategoryTableFilterComposer(super.$state);
-  ColumnFilters<int> get id => $state.composableBuilder(
-      column: $state.table.id,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
-  ColumnFilters<String> get name => $state.composableBuilder(
-      column: $state.table.name,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-}
-
-class $$CategoryTableOrderingComposer
-    extends OrderingComposer<_$Database, $CategoryTable> {
-  $$CategoryTableOrderingComposer(super.$state);
-  ColumnOrderings<int> get id => $state.composableBuilder(
-      column: $state.table.id,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  ColumnOrderings<String> get name => $state.composableBuilder(
-      column: $state.table.name,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-}
-
+typedef $$CategoryTableProcessedTableManager = ProcessedTableManager<
+    _$Database,
+    $CategoryTable,
+    CategoryData,
+    $$CategoryTableFilterComposer,
+    $$CategoryTableOrderingComposer,
+    $$CategoryTableAnnotationComposer,
+    $$CategoryTableCreateCompanionBuilder,
+    $$CategoryTableUpdateCompanionBuilder,
+    (CategoryData, BaseReferences<_$Database, $CategoryTable, CategoryData>),
+    CategoryData,
+    PrefetchHooks Function()>;
 typedef $$GoalTableCreateCompanionBuilder = GoalCompanion Function({
   Value<int> id,
   required String description,
@@ -1097,22 +1139,109 @@ typedef $$GoalTableUpdateCompanionBuilder = GoalCompanion Function({
   Value<DateTime> dateEnd,
 });
 
+class $$GoalTableFilterComposer extends Composer<_$Database, $GoalTable> {
+  $$GoalTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get description => $composableBuilder(
+      column: $table.description, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get value => $composableBuilder(
+      column: $table.value, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get categoryId => $composableBuilder(
+      column: $table.categoryId, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get dateStart => $composableBuilder(
+      column: $table.dateStart, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get dateEnd => $composableBuilder(
+      column: $table.dateEnd, builder: (column) => ColumnFilters(column));
+}
+
+class $$GoalTableOrderingComposer extends Composer<_$Database, $GoalTable> {
+  $$GoalTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get description => $composableBuilder(
+      column: $table.description, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get value => $composableBuilder(
+      column: $table.value, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get categoryId => $composableBuilder(
+      column: $table.categoryId, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get dateStart => $composableBuilder(
+      column: $table.dateStart, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get dateEnd => $composableBuilder(
+      column: $table.dateEnd, builder: (column) => ColumnOrderings(column));
+}
+
+class $$GoalTableAnnotationComposer extends Composer<_$Database, $GoalTable> {
+  $$GoalTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get description => $composableBuilder(
+      column: $table.description, builder: (column) => column);
+
+  GeneratedColumn<int> get value =>
+      $composableBuilder(column: $table.value, builder: (column) => column);
+
+  GeneratedColumn<int> get categoryId => $composableBuilder(
+      column: $table.categoryId, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get dateStart =>
+      $composableBuilder(column: $table.dateStart, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get dateEnd =>
+      $composableBuilder(column: $table.dateEnd, builder: (column) => column);
+}
+
 class $$GoalTableTableManager extends RootTableManager<
     _$Database,
     $GoalTable,
     GoalData,
     $$GoalTableFilterComposer,
     $$GoalTableOrderingComposer,
+    $$GoalTableAnnotationComposer,
     $$GoalTableCreateCompanionBuilder,
-    $$GoalTableUpdateCompanionBuilder> {
+    $$GoalTableUpdateCompanionBuilder,
+    (GoalData, BaseReferences<_$Database, $GoalTable, GoalData>),
+    GoalData,
+    PrefetchHooks Function()> {
   $$GoalTableTableManager(_$Database db, $GoalTable table)
       : super(TableManagerState(
           db: db,
           table: table,
-          filteringComposer:
-              $$GoalTableFilterComposer(ComposerState(db, table)),
-          orderingComposer:
-              $$GoalTableOrderingComposer(ComposerState(db, table)),
+          createFilteringComposer: () =>
+              $$GoalTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$GoalTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$GoalTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
             Value<int> id = const Value.absent(),
             Value<String> description = const Value.absent(),
@@ -1145,76 +1274,25 @@ class $$GoalTableTableManager extends RootTableManager<
             dateStart: dateStart,
             dateEnd: dateEnd,
           ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
         ));
 }
 
-class $$GoalTableFilterComposer extends FilterComposer<_$Database, $GoalTable> {
-  $$GoalTableFilterComposer(super.$state);
-  ColumnFilters<int> get id => $state.composableBuilder(
-      column: $state.table.id,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
-  ColumnFilters<String> get description => $state.composableBuilder(
-      column: $state.table.description,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
-  ColumnFilters<int> get value => $state.composableBuilder(
-      column: $state.table.value,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
-  ColumnFilters<int> get categoryId => $state.composableBuilder(
-      column: $state.table.categoryId,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
-  ColumnFilters<DateTime> get dateStart => $state.composableBuilder(
-      column: $state.table.dateStart,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
-  ColumnFilters<DateTime> get dateEnd => $state.composableBuilder(
-      column: $state.table.dateEnd,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-}
-
-class $$GoalTableOrderingComposer
-    extends OrderingComposer<_$Database, $GoalTable> {
-  $$GoalTableOrderingComposer(super.$state);
-  ColumnOrderings<int> get id => $state.composableBuilder(
-      column: $state.table.id,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  ColumnOrderings<String> get description => $state.composableBuilder(
-      column: $state.table.description,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  ColumnOrderings<int> get value => $state.composableBuilder(
-      column: $state.table.value,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  ColumnOrderings<int> get categoryId => $state.composableBuilder(
-      column: $state.table.categoryId,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  ColumnOrderings<DateTime> get dateStart => $state.composableBuilder(
-      column: $state.table.dateStart,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  ColumnOrderings<DateTime> get dateEnd => $state.composableBuilder(
-      column: $state.table.dateEnd,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-}
-
+typedef $$GoalTableProcessedTableManager = ProcessedTableManager<
+    _$Database,
+    $GoalTable,
+    GoalData,
+    $$GoalTableFilterComposer,
+    $$GoalTableOrderingComposer,
+    $$GoalTableAnnotationComposer,
+    $$GoalTableCreateCompanionBuilder,
+    $$GoalTableUpdateCompanionBuilder,
+    (GoalData, BaseReferences<_$Database, $GoalTable, GoalData>),
+    GoalData,
+    PrefetchHooks Function()>;
 typedef $$MovementTableCreateCompanionBuilder = MovementCompanion Function({
   Value<int> id,
   required String description,
@@ -1238,22 +1316,139 @@ typedef $$MovementTableUpdateCompanionBuilder = MovementCompanion Function({
   Value<int?> goalId,
 });
 
+class $$MovementTableFilterComposer
+    extends Composer<_$Database, $MovementTable> {
+  $$MovementTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get description => $composableBuilder(
+      column: $table.description, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<bool> get isIncome => $composableBuilder(
+      column: $table.isIncome, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<double> get value => $composableBuilder(
+      column: $table.value, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get categoryId => $composableBuilder(
+      column: $table.categoryId, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get timestamp => $composableBuilder(
+      column: $table.timestamp, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+      column: $table.createdAt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+      column: $table.updatedAt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get goalId => $composableBuilder(
+      column: $table.goalId, builder: (column) => ColumnFilters(column));
+}
+
+class $$MovementTableOrderingComposer
+    extends Composer<_$Database, $MovementTable> {
+  $$MovementTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get description => $composableBuilder(
+      column: $table.description, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<bool> get isIncome => $composableBuilder(
+      column: $table.isIncome, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<double> get value => $composableBuilder(
+      column: $table.value, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get categoryId => $composableBuilder(
+      column: $table.categoryId, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get timestamp => $composableBuilder(
+      column: $table.timestamp, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+      column: $table.createdAt, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+      column: $table.updatedAt, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get goalId => $composableBuilder(
+      column: $table.goalId, builder: (column) => ColumnOrderings(column));
+}
+
+class $$MovementTableAnnotationComposer
+    extends Composer<_$Database, $MovementTable> {
+  $$MovementTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get description => $composableBuilder(
+      column: $table.description, builder: (column) => column);
+
+  GeneratedColumn<bool> get isIncome =>
+      $composableBuilder(column: $table.isIncome, builder: (column) => column);
+
+  GeneratedColumn<double> get value =>
+      $composableBuilder(column: $table.value, builder: (column) => column);
+
+  GeneratedColumn<int> get categoryId => $composableBuilder(
+      column: $table.categoryId, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get timestamp =>
+      $composableBuilder(column: $table.timestamp, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  GeneratedColumn<int> get goalId =>
+      $composableBuilder(column: $table.goalId, builder: (column) => column);
+}
+
 class $$MovementTableTableManager extends RootTableManager<
     _$Database,
     $MovementTable,
     MovementData,
     $$MovementTableFilterComposer,
     $$MovementTableOrderingComposer,
+    $$MovementTableAnnotationComposer,
     $$MovementTableCreateCompanionBuilder,
-    $$MovementTableUpdateCompanionBuilder> {
+    $$MovementTableUpdateCompanionBuilder,
+    (MovementData, BaseReferences<_$Database, $MovementTable, MovementData>),
+    MovementData,
+    PrefetchHooks Function()> {
   $$MovementTableTableManager(_$Database db, $MovementTable table)
       : super(TableManagerState(
           db: db,
           table: table,
-          filteringComposer:
-              $$MovementTableFilterComposer(ComposerState(db, table)),
-          orderingComposer:
-              $$MovementTableOrderingComposer(ComposerState(db, table)),
+          createFilteringComposer: () =>
+              $$MovementTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$MovementTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$MovementTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
             Value<int> id = const Value.absent(),
             Value<String> description = const Value.absent(),
@@ -1298,106 +1493,25 @@ class $$MovementTableTableManager extends RootTableManager<
             updatedAt: updatedAt,
             goalId: goalId,
           ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
         ));
 }
 
-class $$MovementTableFilterComposer
-    extends FilterComposer<_$Database, $MovementTable> {
-  $$MovementTableFilterComposer(super.$state);
-  ColumnFilters<int> get id => $state.composableBuilder(
-      column: $state.table.id,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
-  ColumnFilters<String> get description => $state.composableBuilder(
-      column: $state.table.description,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
-  ColumnFilters<bool> get isIncome => $state.composableBuilder(
-      column: $state.table.isIncome,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
-  ColumnFilters<double> get value => $state.composableBuilder(
-      column: $state.table.value,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
-  ColumnFilters<int> get categoryId => $state.composableBuilder(
-      column: $state.table.categoryId,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
-  ColumnFilters<DateTime> get timestamp => $state.composableBuilder(
-      column: $state.table.timestamp,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
-  ColumnFilters<DateTime> get createdAt => $state.composableBuilder(
-      column: $state.table.createdAt,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
-  ColumnFilters<DateTime> get updatedAt => $state.composableBuilder(
-      column: $state.table.updatedAt,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
-  ColumnFilters<int> get goalId => $state.composableBuilder(
-      column: $state.table.goalId,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-}
-
-class $$MovementTableOrderingComposer
-    extends OrderingComposer<_$Database, $MovementTable> {
-  $$MovementTableOrderingComposer(super.$state);
-  ColumnOrderings<int> get id => $state.composableBuilder(
-      column: $state.table.id,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  ColumnOrderings<String> get description => $state.composableBuilder(
-      column: $state.table.description,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  ColumnOrderings<bool> get isIncome => $state.composableBuilder(
-      column: $state.table.isIncome,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  ColumnOrderings<double> get value => $state.composableBuilder(
-      column: $state.table.value,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  ColumnOrderings<int> get categoryId => $state.composableBuilder(
-      column: $state.table.categoryId,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  ColumnOrderings<DateTime> get timestamp => $state.composableBuilder(
-      column: $state.table.timestamp,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  ColumnOrderings<DateTime> get createdAt => $state.composableBuilder(
-      column: $state.table.createdAt,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  ColumnOrderings<DateTime> get updatedAt => $state.composableBuilder(
-      column: $state.table.updatedAt,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  ColumnOrderings<int> get goalId => $state.composableBuilder(
-      column: $state.table.goalId,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-}
+typedef $$MovementTableProcessedTableManager = ProcessedTableManager<
+    _$Database,
+    $MovementTable,
+    MovementData,
+    $$MovementTableFilterComposer,
+    $$MovementTableOrderingComposer,
+    $$MovementTableAnnotationComposer,
+    $$MovementTableCreateCompanionBuilder,
+    $$MovementTableUpdateCompanionBuilder,
+    (MovementData, BaseReferences<_$Database, $MovementTable, MovementData>),
+    MovementData,
+    PrefetchHooks Function()>;
 
 class $DatabaseManager {
   final _$Database _db;
