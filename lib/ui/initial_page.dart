@@ -19,8 +19,8 @@ class InitialPage extends StatefulWidget {
 class _InitialPageState extends State<InitialPage> {
   int _currentIndex = 0;
   List<Widget> body = [
-    const MainPage(),
-    const TransactionPage(),
+    const MainPage(key: Key('statefulMainPage')),
+    const TransactionPageStateful(key: Key('statefulTransactionPage')),
     SvgPicture.asset("assets/ic_target_24.svg", height: 24, width: 24),
     const MenuPageState(),
     const ChatScreen()
@@ -30,6 +30,7 @@ class _InitialPageState extends State<InitialPage> {
   Widget build(BuildContext context) {
     return Scaffold(
         bottomNavigationBar: BottomNavigationBar(
+          key: const Key('navigationBar'),
           type: BottomNavigationBarType.fixed,
           currentIndex: _currentIndex,
           onTap: (int newIndex) {
@@ -39,18 +40,24 @@ class _InitialPageState extends State<InitialPage> {
           },
           items: const [
             BottomNavigationBarItem(
-                label: "Início",
-                icon: Icon(Icons.home)),
-            BottomNavigationBarItem(
-                label: "Transações",
-                icon: Icon(Icons.receipt_long)),
-            BottomNavigationBarItem(
-                label: "Metas",
-                icon: Icon(Symbols.target, weight: 700)
+              key: Key('navHome'),
+              label: "Início",
+              icon: Icon(Icons.home)
             ),
             BottomNavigationBarItem(
-                label: "Menu",
-                icon: Icon(Icons.menu)
+              key: Key('navTransaction'),
+              label: "Transações",
+              icon: Icon(Icons.receipt_long)
+            ),
+            BottomNavigationBarItem(
+              key: Key('navGoals'),
+              label: "Metas",
+              icon: Icon(Symbols.target, weight: 700)
+            ),
+            BottomNavigationBarItem(
+              key: Key('navMenu'),
+              label: "Menu",
+              icon: Icon(Icons.menu)
             ),
             BottomNavigationBarItem(
                 label: "Chat",
@@ -59,6 +66,7 @@ class _InitialPageState extends State<InitialPage> {
           ],
         ),
         body: Center(
+          key: const Key('body'),
           child: body[_currentIndex],
         )
     );

@@ -11,14 +11,17 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter/services.dart';
 
-class TransactionPage extends StatefulWidget {
-  const TransactionPage({super.key});
+import '../command/delete_transaction_command.dart';
+import '../command/edit_transaction_command.dart';
+
+class TransactionPageStateful extends StatefulWidget {
+  const TransactionPageStateful({super.key});
 
   @override
-  State<TransactionPage> createState() => _TransactionPage();
+  State<TransactionPageStateful> createState() => TransactionPage();
 }
 
-class _TransactionPage extends State<TransactionPage> {
+class TransactionPage extends State<TransactionPageStateful> {
   String date = "date";
   int _dateDiff = 0;
   CategoryData? _selectedCategory;
@@ -206,35 +209,27 @@ class _TransactionPage extends State<TransactionPage> {
   }
 
   Future<void> _showPopupMenu(Offset globalPosition, MovementData item) async {
-    await showMenu(
+    final commands = {
+      editTransaction: EditTransactionCommand(context, this, item),
+      deleteTransaction: DeleteTransactionCommand(context, this, item),
+    };
+  
+    final value = await showMenu(
       context: context,
       position: RelativeRect.fromLTRB(globalPosition.dx, globalPosition.dy, globalPosition.dx, globalPosition.dy),
-      items: const[
-        PopupMenuItem(
-           value: editTransaction,
-          child: Text("Editar"),
-        ),
-        PopupMenuItem(
-          value: deleteTransaction,
-          child: Text("Deletar"),
-        ),
+      items: const [
+        PopupMenuItem(value: editTransaction, child: Text("Editar")),
+        PopupMenuItem(value: deleteTransaction, child: Text("Deletar")),
       ],
       elevation: 8.0,
-    ).then((value) async {
-      if (value == null) return;
-      switch (value) {
-        case editTransaction:
-          _setFields(item);
-          _showAddOrEditTransactionDialog(false, item);
-          break;
-        case deleteTransaction:
-          _showDeleteTransactionDialog(item);
-          break;
-      }
-    });
+    );
+  
+    if (value != null) {
+      await commands[value]?.execute();
+    }
   }
 
-  void _setFields(MovementData item) async {
+  void setFields(MovementData item) async {
     _descriptionController.text = item.description;
     _valueController.text = item.value.toStringAsFixed(2).replaceAll(r'.', ',');
     _dateController.text = DateFormat('dd/MM/yyyy').format(item.timestamp);
@@ -288,7 +283,7 @@ class _TransactionPage extends State<TransactionPage> {
                 _selectedGoal = null;
                 _selectedCategory = null;
                 isEntryOrExit = [true, false];
-                _showAddOrEditTransactionDialog(true, null);
+                showAddOrEditTransactionDialog(true, null);
               }, 
               icon: const Icon(Icons.add, size: 28)
             )
@@ -298,7 +293,7 @@ class _TransactionPage extends State<TransactionPage> {
     );
   }
 
-  Future<void> _showAddOrEditTransactionDialog(bool isToAdd, MovementData? item) async {
+  Future<void> showAddOrEditTransactionDialog(bool isToAdd, MovementData? item) async {
     setTransactionDialogText(isToAdd);
     final result = await _addOrEditTransactionDialog(isToAdd, item);
 
@@ -606,7 +601,7 @@ class _TransactionPage extends State<TransactionPage> {
     movementTableHelper.addTransaction(movement);
   }
 
-  Future<void> _showDeleteTransactionDialog(MovementData item) async {
+  Future<void> showDeleteTransactionDialog(MovementData item) async {
     final result = await _deleteTransactionDialog(item);
 
     if (result == true && mounted) {

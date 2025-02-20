@@ -1,7 +1,10 @@
+import 'dart:async';
+
 import 'package:fin_fit_app_mobile/helper/category_table_helper.dart';
 import 'package:fin_fit_app_mobile/helper/movement_table_helper.dart';
 import 'package:fin_fit_app_mobile/service/database.dart';
 import 'package:fin_fit_app_mobile/ui/menu_page.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
@@ -21,6 +24,10 @@ class _PersonalizeCategoryPageState extends State<PersonalizeCategoryPage> {
   late CategoryTableHelper categoryTableHelper;
   late List<CategoryData> categories;
 
+  late final DatabaseReference _categoriesRef;
+  late StreamSubscription<DatabaseEvent> _categoriesSubscription;
+  late List<String> categoriesFirebase;
+
   final TextEditingController _categoryNameController = TextEditingController();
   String title = "";
   String actionButton = "";
@@ -35,6 +42,24 @@ class _PersonalizeCategoryPageState extends State<PersonalizeCategoryPage> {
 
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       _getCategoriesList();
+    });
+
+    init();
+  }
+
+  void init() async {
+    _categoriesRef = FirebaseDatabase.instance.ref('categories');
+    try {
+      final categoriesSnap = await _categoriesRef.get();
+      categoriesFirebase = categoriesSnap.value as List<String>;
+    } catch(err) {
+      debugPrint(err.toString());
+    }
+
+    _categoriesSubscription = _categoriesRef.onValue.listen((event) {
+      setState(() {
+        categoriesFirebase = (event.snapshot.value ?? List.empty()) as List<String>;
+      });  
     });
   }
 
