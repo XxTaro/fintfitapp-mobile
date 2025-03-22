@@ -22,8 +22,8 @@ class _InitialPageState extends State<InitialPage> {
     const MainPage(key: Key('statefulMainPage')),
     const TransactionPageStateful(key: Key('statefulTransactionPage')),
     SvgPicture.asset("assets/ic_target_24.svg", height: 24, width: 24),
-    const MenuPageState(),
-    const ChatScreen()
+    const MenuPageState(key: Key('statefulMenuPage'),),
+    const ChatScreen(key: Key('statefulChatPage'),)
   ];
 
   @override

@@ -55,6 +55,7 @@ class _LoginPageState extends State<LoginPage> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
+                    key: const ValueKey("textTitle"),
                     title,
                     style: const TextStyle(
                       fontSize: 32,
@@ -65,6 +66,7 @@ class _LoginPageState extends State<LoginPage> {
                   Padding(
                     padding: const EdgeInsets.all(10),
                     child: TextFormField(
+                      key: const ValueKey("formFieldEmail"),
                       controller: emailController,
                       keyboardType: TextInputType.emailAddress,
                       decoration: const InputDecoration(
@@ -82,6 +84,7 @@ class _LoginPageState extends State<LoginPage> {
                   Padding(
                     padding: const EdgeInsets.all(10),
                     child: TextFormField(
+                      key: const ValueKey("formFieldPassword"),
                       controller: passwordController,
                       obscureText: true,
                       decoration: const InputDecoration(
@@ -102,6 +105,7 @@ class _LoginPageState extends State<LoginPage> {
                   Padding(
                     padding: const EdgeInsets.all(10),
                     child: ElevatedButton(
+                      key: const ValueKey("buttonLoginRegisterAction"),
                       onPressed: () {
                         if (formKey.currentState!.validate()) {
                           if (isLogin) {
@@ -142,6 +146,7 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                   ),
                   TextButton(
+                    key: const ValueKey("buttonLoginRegisterToggle"),
                     onPressed: () => setFormAction(!isLogin), 
                     child: Text(
                       toggleButton,
