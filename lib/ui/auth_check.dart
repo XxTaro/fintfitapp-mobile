@@ -19,7 +19,7 @@ class _AuthCheckState extends State<AuthCheck> {
     if (auth.isLoading) {
       return loading();
     } else if (auth.user == null) {
-      return const LoginPage();
+      return const LoginPage(key: ValueKey('statefulLoginPage'),);
     }
 
     return const InitialPage(title: "FinFitApp",);
@@ -28,7 +28,7 @@ class _AuthCheckState extends State<AuthCheck> {
   Widget loading() {
     return const Scaffold(
       body: Center(
-        child: CircularProgressIndicator(),
+        child: CircularProgressIndicator(key: const ValueKey("authLoadingProgressIndicator"),),
       ),
     );
   }

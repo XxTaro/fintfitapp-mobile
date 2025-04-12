@@ -2,16 +2,16 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class AuthService extends ChangeNotifier {
-  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseAuth? _auth;
   User? user;
   bool isLoading = true;
 
-  AuthService() {
-    _authCheck();
+  AuthService({FirebaseAuth? auth}) : _auth = auth ?? FirebaseAuth.instance {
+   _authCheck();
   }
 
   void _authCheck() {
-    _auth.authStateChanges().listen((User? user) {
+    _auth!.authStateChanges().listen((User? user) {
       user = user;
       isLoading = false;
       notifyListeners();
@@ -20,7 +20,7 @@ class AuthService extends ChangeNotifier {
 
   Future<void> register(String email, String password) async {
     try {
-      await _auth.createUserWithEmailAndPassword(email: email, password: password);
+      await _auth!.createUserWithEmailAndPassword(email: email, password: password);
       _getUser();
     } on FirebaseAuthException catch (e) {
       if (e.code == 'weak-password') {
@@ -33,7 +33,7 @@ class AuthService extends ChangeNotifier {
 
   Future<void> login(String email, String password) async {
     try {
-      await _auth.signInWithEmailAndPassword(email: email, password: password);
+      await _auth!.signInWithEmailAndPassword(email: email, password: password);
       _getUser();
     } on FirebaseAuthException catch (e) {
       if (e.code == 'user-not-found') {
@@ -45,12 +45,12 @@ class AuthService extends ChangeNotifier {
   }
 
   void logout() {
-    _auth.signOut();
+    _auth!.signOut();
     _getUser();
   }
 
   void _getUser() {
-    user = _auth.currentUser;
+    user = _auth!.currentUser;
     notifyListeners();
   }
 

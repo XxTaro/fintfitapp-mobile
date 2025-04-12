@@ -30,6 +30,7 @@ migrate_working_dir/
 .pub-cache/
 .pub/
 /build/
+/android/app/.cxx/
 
 # Symbolication related
 app.*.symbols
@@ -43,4 +44,4 @@ app.*.map.json
 /android/app/release
 
 **/ios/GoogleService-Info.plist
-**/android/app/google-services.json
+**/android/app/src/google-services.json
