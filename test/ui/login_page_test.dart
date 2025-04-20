@@ -3,19 +3,13 @@ import 'package:fin_fit_app_mobile/ui/auth_check.dart';
 import 'package:fin_fit_app_mobile/ui/login_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_auth_mocks/firebase_auth_mocks.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_core_platform_interface/test.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mock_exceptions/mock_exceptions.dart';
 import 'package:mockito/mockito.dart';
 import 'package:provider/provider.dart';
 
-import '../utils/firebasemock.dart';
-
 class MockUserCredential extends Mock implements UserCredential {}
-// class MockUser extends Mock implements User {}
 
 void main() {
   testWidgets('Login page displays correctly', (WidgetTester tester) async {
@@ -323,11 +317,11 @@ void main() {
   testWidgets('Successfully registered a new account',
       (WidgetTester tester) async {
     //Given
-    final mockAuth = MockFirebaseAuth();
     final mockCredential = MockUserCredential();
     final MockUser mockUser = MockUser();
+    final mockAuth = MockFirebaseAuth(mockUser: mockUser);
 
-    when(() => mockCredential.user).thenReturn(mockUser as User? Function());
+    when(mockCredential.user).thenReturn(mockUser);
 
     Widget loginPage = ChangeNotifierProvider(
       create: (context) => AuthService(auth: mockAuth),
@@ -335,6 +329,12 @@ void main() {
     );
     await tester.pumpWidget(loginPage);
     await tester.pumpAndSettle();
+    // Alterando o estado do botão de login para registrar
+    Finder switchRegisterButton =
+        find.byKey(const ValueKey('buttonLoginRegisterToggle'));
+    await tester.tap(switchRegisterButton);
+    await tester.pumpAndSettle();
+    
     Finder emailFinder = find.byKey(const ValueKey('formFieldEmail'));
     await tester.enterText(emailFinder, 'teste@teste.com');
 
@@ -351,9 +351,95 @@ void main() {
     final userNotFoundMessage = find.text('Cadastro efetuado com sucesso!');
     expect(userNotFoundMessage, findsOneWidget,
         reason: 'Checking if the error message is displayed when login fails');
+    final initialPage = find.byKey(const ValueKey('statefulMainPage'));
+    expect(initialPage, findsOneWidget,
+        reason:
+            'Checking if the user is redirected to the initial page when register is successful');
+  });
+
+  testWidgets('Unsuccessfully registered a new account when password is weak',
+      (WidgetTester tester) async {
+    //Given
+    final mockAuth = MockFirebaseAuth();
+
+    whenCalling(Invocation.method(#createUserWithEmailAndPassword, null))
+        .on(mockAuth)
+        .thenThrow(FirebaseAuthException(code: 'weak-password'));
+    
+    Widget loginPage = ChangeNotifierProvider(
+      create: (context) => AuthService(auth: mockAuth),
+      child: const MaterialApp(home: AuthCheck()),
+    );
+    await tester.pumpWidget(loginPage);
+    await tester.pumpAndSettle();
+    // Alterando o estado do botão de login para registrar
+    Finder switchRegisterButton =
+        find.byKey(const ValueKey('buttonLoginRegisterToggle'));
+    await tester.tap(switchRegisterButton);
+    await tester.pumpAndSettle();
+    
+    Finder emailFinder = find.byKey(const ValueKey('formFieldEmail'));
+    await tester.enterText(emailFinder, 'teste@teste.com');
+
+    Finder passwordFinder = find.byKey(const ValueKey('formFieldPassword'));
+    await tester.enterText(passwordFinder, 'teste123');
+
+    // When
+    Finder loginButton =
+        find.byKey(const ValueKey('buttonLoginRegisterAction'));
+    await tester.tap(loginButton);
+    await tester.pump(const Duration(milliseconds: 1000));
+
+    //Then
+    final weakPasswordErrorMessage = find.text('A senha informada é muito fraca.');
+    expect(weakPasswordErrorMessage, findsOneWidget,
+        reason: 'Checking if the error message is displayed when register fails');
     final initialPage = find.byKey(const ValueKey('statefulLoginPage'));
     expect(initialPage, findsOneWidget,
         reason:
-            'Checking if the page is still the login page when login fails');
+            'Checking if the page is still the login page when register fails');
+  });
+
+  testWidgets('Unsuccessfully registered a new account when email is already in use',
+      (WidgetTester tester) async {
+    //Given
+    final mockAuth = MockFirebaseAuth();
+
+    whenCalling(Invocation.method(#createUserWithEmailAndPassword, null))
+        .on(mockAuth)
+        .thenThrow(FirebaseAuthException(code: 'email-already-in-use'));
+    
+    Widget loginPage = ChangeNotifierProvider(
+      create: (context) => AuthService(auth: mockAuth),
+      child: const MaterialApp(home: AuthCheck()),
+    );
+    await tester.pumpWidget(loginPage);
+    await tester.pumpAndSettle();
+    // Alterando o estado do botão de login para registrar
+    Finder switchRegisterButton =
+        find.byKey(const ValueKey('buttonLoginRegisterToggle'));
+    await tester.tap(switchRegisterButton);
+    await tester.pumpAndSettle();
+    
+    Finder emailFinder = find.byKey(const ValueKey('formFieldEmail'));
+    await tester.enterText(emailFinder, 'teste@teste.com');
+
+    Finder passwordFinder = find.byKey(const ValueKey('formFieldPassword'));
+    await tester.enterText(passwordFinder, 'teste123');
+
+    // When
+    Finder loginButton =
+        find.byKey(const ValueKey('buttonLoginRegisterAction'));
+    await tester.tap(loginButton);
+    await tester.pump(const Duration(milliseconds: 1000));
+
+    //Then
+    final emailInUseErrorMessage = find.text('O e-mail informado já está em uso.');
+    expect(emailInUseErrorMessage, findsOneWidget,
+        reason: 'Checking if the error message is displayed when register fails');
+    final initialPage = find.byKey(const ValueKey('statefulLoginPage'));
+    expect(initialPage, findsOneWidget,
+        reason:
+            'Checking if the page is still the login page when register fails');
   });
 }
