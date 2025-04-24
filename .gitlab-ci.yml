@@ -1,4 +1,6 @@
 sonarqube-check:
+  tags:
+    - docker-cmd
   image: 
     name: sonarsource/sonar-scanner-cli:latest
     entrypoint: [""]
