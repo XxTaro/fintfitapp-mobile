@@ -12,6 +12,9 @@ sonarqube-check:
     paths:
       - .sonar/cache
   script: 
+    - flutter pub get
+    - flutter test
+    - flutter test --machine --coverage > tests.output
     - sonar-scanner
   allow_failure: true
   only:
