@@ -10,8 +10,7 @@ flutter-build:
     - flutter pub get
     - flutter test
     - flutter test --machine --coverage > tests.output
-  stages:
-    - build
+  stage: build
   only:
     - develop
 
@@ -30,8 +29,7 @@ sonarqube-check:
       - .sonar/cache
   script: 
     - sonar-scanner
-  stages:
-    - sonarqube
+  stage: sonarqube
   allow_failure: true
   only:
     - develop
