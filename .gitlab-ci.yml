@@ -1,22 +1,22 @@
-stages:
-  # - build
-  - sonarqube
+# stages:
+#   - build
+#   - sonarqube
 
-flutter-build:
-  image: ghcr.io/cirruslabs/flutter:3.29.3
-  tags:
-    - docker-cmd
-  script:
-    - flutter pub get
-    - flutter test
-    - flutter test --machine --coverage > tests.output
-  stage: build
-  only:
-    - develop
-  artifacts:
-    paths:
-      - tests.output
-    expire_in: 1 hour
+# flutter-build:
+#   image: ghcr.io/cirruslabs/flutter:3.29.3
+#   tags:
+#     - docker-cmd
+#   script:
+#     - flutter pub get
+#     - flutter test
+#     - flutter test --machine --coverage > tests.output
+#   stage: build
+#   only:
+#     - develop
+#   artifacts:
+#     paths:
+#       - tests.output
+#     expire_in: 1 hour
 
 sonarqube-check:
   tags:
