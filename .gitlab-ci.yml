@@ -1,6 +1,6 @@
-# stages:
-#   - build
-#   - sonarqube
+stages:
+  # - build
+  - sonarqube
 
 # flutter-build:
 #   image: ghcr.io/cirruslabs/flutter:3.29.3
