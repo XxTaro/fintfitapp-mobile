@@ -18,21 +18,61 @@ stages:
 #       - tests.output
 #     expire_in: 1 hour
 
+# sonarqube-check:
+#   tags:
+#     - docker-cmd
+#   image: 
+#     name: sonarsource/sonar-scanner-cli:4.8.1
+#     entrypoint: [""]
+#   variables:
+#     SONAR_USER_HOME: "${CI_PROJECT_DIR}/.sonar"  # Defines the location of the analysis task cache
+#     GIT_DEPTH: "0"  # Tells git to fetch all the branches of the project, required by the analysis task
+#   cache:
+#     key: "${CI_JOB_NAME}"
+#     paths:
+#       - .sonar/cache
+#   script: 
+#     - sonar-scanner
+#   stage: sonarqube
+#   allow_failure: true
+#   only:
+#     - develop
+
 sonarqube-check:
   tags:
-    - docker-cmd
-  image: 
-    name: sonarsource/sonar-scanner-cli:4.8.1
-    entrypoint: [""]
+    - docker-cmd # Certifique-se que seu runner tem essa tag e usa o executor docker
+  image:
+    name: cirrusci/flutter:stable # Ou uma versão específica do Flutter, ex: cirrusci/flutter:3.19.6
+    entrypoint: ["/bin/sh", "-c"] # Mude o entrypoint para permitir comandos shell
   variables:
-    SONAR_USER_HOME: "${CI_PROJECT_DIR}/.sonar"  # Defines the location of the analysis task cache
-    GIT_DEPTH: "0"  # Tells git to fetch all the branches of the project, required by the analysis task
+    SONAR_USER_HOME: "${CI_PROJECT_DIR}/.sonar"
+    GIT_DEPTH: "0"
+    SONAR_SCANNER_VERSION: "4.8.1.3023" # Versão do SonarScanner que você quer usar
+    SONAR_SCANNER_HOME: "/opt/sonar-scanner"
+    # Adicione SONAR_HOST_URL e SONAR_TOKEN como variáveis de CI/CD no GitLab
+    # SONAR_HOST_URL: "http://<IP_DA_SUA_MAQUINA_OU_HOST.DOCKER.INTERNAL>:9000"
+    # SONAR_TOKEN: "seu_token_do_sonarqube"
   cache:
     key: "${CI_JOB_NAME}"
     paths:
       - .sonar/cache
-  script: 
-    - sonar-scanner
+      - ${SONAR_SCANNER_HOME}/.sonar # Cache dos plugins do sonar scanner
+  before_script:
+    - echo "Using Flutter version:"
+    - flutter --version
+    # Download e instala o SonarScanner CLI
+    - apt-get update && apt-get install -y --no-install-recommends openjdk-11-jre-headless unzip curl # Instala dependências (Java já deve vir com muitas imagens Flutter, mas curl e unzip podem ser úteis)
+    - curl --create-dirs -sSLo /tmp/sonar-scanner.zip "https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-${SONAR_SCANNER_VERSION}-linux.zip"
+    - unzip -o /tmp/sonar-scanner.zip -d /opt/
+    - ln -s /opt/sonar-scanner-${SONAR_SCANNER_VERSION}-linux ${SONAR_SCANNER_HOME}
+    - export PATH="${SONAR_SCANNER_HOME}/bin:${PATH}"
+    - echo "SonarScanner installed at ${SONAR_SCANNER_HOME}"
+    - sonar-scanner -v # Verifica a instalação do sonar-scanner
+    # Se necessário, buscar dependências do Flutter antes da análise
+    - flutter pub get
+  script:
+    # O token e host URL podem ser passados aqui ou estar no sonar-project.properties
+    - sonar-scanner -Dsonar.host.url=${SONAR_HOST_URL} -Dsonar.login=${SONAR_TOKEN}
   stage: sonarqube
   allow_failure: true
   only:
