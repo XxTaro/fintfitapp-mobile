@@ -43,15 +43,12 @@ sonarqube-check:
     - docker-cmd # Certifique-se que seu runner tem essa tag e usa o executor docker
   image:
     name: instrumentisto/flutter:3.29
-    entrypoint: ["/bin/sh", "-c"] # Mude o entrypoint para permitir comandos shell
+    entrypoint: [""] # Mude o entrypoint para permitir comandos shell
   variables:
     SONAR_USER_HOME: "${CI_PROJECT_DIR}/.sonar"
     GIT_DEPTH: "0"
-    SONAR_SCANNER_VERSION: "4.8.1.3023" # Versão do SonarScanner que você quer usar
+    SONAR_SCANNER_VERSION: "4.8.1.3023"
     SONAR_SCANNER_HOME: "/opt/sonar-scanner"
-    # Adicione SONAR_HOST_URL e SONAR_TOKEN como variáveis de CI/CD no GitLab
-    # SONAR_HOST_URL: "http://<IP_DA_SUA_MAQUINA_OU_HOST.DOCKER.INTERNAL>:9000"
-    # SONAR_TOKEN: "seu_token_do_sonarqube"
   cache:
     key: "${CI_JOB_NAME}"
     paths:
