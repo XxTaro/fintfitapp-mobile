@@ -42,7 +42,7 @@ sonarqube-check:
   tags:
     - docker-cmd # Certifique-se que seu runner tem essa tag e usa o executor docker
   image:
-    name: cirrusci/flutter:stable # Ou uma versão específica do Flutter, ex: cirrusci/flutter:3.19.6
+    name: instrumentisto/flutter:3.29
     entrypoint: ["/bin/sh", "-c"] # Mude o entrypoint para permitir comandos shell
   variables:
     SONAR_USER_HOME: "${CI_PROJECT_DIR}/.sonar"
