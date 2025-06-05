@@ -35,8 +35,12 @@ dependencies:
   velocity_x: ^4.3.1
   firebase_core_platform_interface: ^5.4.0
   firebase_auth_mocks: ^0.14.1
-  mockito: ^5.4.5
   mock_exceptions: ^0.8.2
+  dart_style: ^3.1.0
+  source_gen: ^2.0.0
+
+dependency_overrides:
+  analyzer: 7.3.0
 
 dev_dependencies:
   drift_dev: ^2.19.1
@@ -46,7 +50,8 @@ dev_dependencies:
   integration_test:
     sdk: flutter
   #flutter_gherkin: ^3.0.0-rc.17
-  build_runner: ^2.1.10
+  build_runner: ^2.4.9
+  mockito: ^5.4.5
   test: ^1.25.15
 
 flutter:

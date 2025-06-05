@@ -28,10 +28,6 @@ class MenuPageStateState extends State<MenuPageState> {
     );
   }
 
-  set menuPage(StatefulWidget? page) {
-    this.page = page;
-  }
-
   List<Widget> menuItems() {
     return [
       Expanded(
@@ -39,27 +35,29 @@ class MenuPageStateState extends State<MenuPageState> {
           itemCount: MenuItems.values.length,
           itemBuilder: (context, index) {
             return GestureDetector(
-              child: Ink(
-                width: 500,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: InkWell(
-                  highlightColor: Colors.grey[300],
-                  borderRadius: BorderRadius.circular(6),
-                  onTap: () {
-                    setState(() {
-                      page = MenuItems.values[index].page;
-                    });
-                  },
-                  child: ListTile(
-                    title: Text(MenuItems.values[index].title),
-                    subtitle: Text(MenuItems.values[index].description),
-                    leading: MenuItems.values[index].icon,
+              child: Material(
+                child: Ink(
+                  width: 500,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(6),
                   ),
+                  child: InkWell(
+                    highlightColor: Colors.grey[300],
+                    borderRadius: BorderRadius.circular(6),
+                    onTap: () {
+                      setState(() {
+                        page = MenuItems.values[index].page;
+                      });
+                    },
+                    child: ListTile(
+                      title: Text(MenuItems.values[index].title),
+                      subtitle: Text(MenuItems.values[index].description),
+                      leading: MenuItems.values[index].icon,
+                    ),
+                  )
                 )
-              )
+              ) 
             );
           },
         )

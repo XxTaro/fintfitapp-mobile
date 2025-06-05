@@ -47,6 +47,7 @@ class AuthService extends ChangeNotifier {
   void logout() {
     _auth!.signOut();
     _getUser();
+    notifyListeners();
   }
 
   void _getUser() {

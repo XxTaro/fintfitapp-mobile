@@ -3,7 +3,6 @@ import 'dart:io';
 
 import 'package:fin_fit_app_mobile/helper/movement_table_helper.dart';
 import 'package:fin_fit_app_mobile/service/database.dart';
-import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
@@ -20,26 +19,11 @@ class _MainPage extends State<MainPage> {
   late Database _db;
   late MovementTableHelper movementTableHelper;
 
-  //late final DatabaseReference _movementsRef;
-  //late StreamSubscription<DatabaseEvent> _movementsSubscription;
-
   @override
   void initState() {
     super.initState();
     _db = DatabaseConnection.instance;
     movementTableHelper = MovementTableHelper(_db);
-
-    init();
-  }
-
-  void init() async {
-  //  _movementsRef = FirebaseDatabase.instance.ref('movement');
-  //  try {
-  //    final movementSnapshot = await _movementsRef.get();
-  //    
-  //  } catch() {
-//
-  //  }
   }
 
   @override
