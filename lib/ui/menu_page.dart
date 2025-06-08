@@ -1,4 +1,5 @@
 import 'package:fin_fit_app_mobile/service/auth_service.dart';
+import 'package:fin_fit_app_mobile/service/category_service.dart';
 import 'package:fin_fit_app_mobile/ui/personalize_category_page.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -11,7 +12,17 @@ class MenuPageState extends StatefulWidget {
 }
 
 class MenuPageStateState extends State<MenuPageState> {
-  StatefulWidget? page;
+  Widget? page;
+  List<MenuItemModel> menuItemsList = [
+    MenuItemModel(
+      title: "Personalizar categorias",
+      description: "Criar, editar ou remover categorias",
+      icon: const Icon(Icons.edit),
+      pageBuilder: () => const PersonalizeCategoryPage(key: ValueKey('personalizeCategoryPage')
+      // , categoryService: CategoryService(),
+      ),
+    ),
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -32,7 +43,7 @@ class MenuPageStateState extends State<MenuPageState> {
     return [
       Expanded(
         child: ListView.builder(
-          itemCount: MenuItems.values.length,
+          itemCount: menuItemsList.length,
           itemBuilder: (context, index) {
             return GestureDetector(
               child: Material(
@@ -47,13 +58,13 @@ class MenuPageStateState extends State<MenuPageState> {
                     borderRadius: BorderRadius.circular(6),
                     onTap: () {
                       setState(() {
-                        page = MenuItems.values[index].page;
+                        page = menuItemsList[index].pageBuilder();
                       });
                     },
                     child: ListTile(
-                      title: Text(MenuItems.values[index].title),
-                      subtitle: Text(MenuItems.values[index].description),
-                      leading: MenuItems.values[index].icon,
+                      title: Text(menuItemsList[index].title),
+                      subtitle: Text(menuItemsList[index].description),
+                      leading: menuItemsList[index].icon,
                     ),
                   )
                 )
@@ -88,14 +99,19 @@ class MenuPageStateState extends State<MenuPageState> {
 
 }
 
-enum MenuItems {
-  logout("Personalizar categorias", "Criar, editar ou remover categorias", Icon(Icons.edit), PersonalizeCategoryPage()),;
+typedef PageBuilder = Widget Function();
 
+class MenuItemModel {
   final String title;
   final String description;
   final Icon icon;
-  final StatefulWidget page;
+  final PageBuilder pageBuilder;
 
-  const MenuItems(this.title, this.description, this.icon, this.page);
-
+  // Note que o construtor NÃO é const
+  MenuItemModel({
+    required this.title,
+    required this.description,
+    required this.icon,
+    required this.pageBuilder,
+  });
 }

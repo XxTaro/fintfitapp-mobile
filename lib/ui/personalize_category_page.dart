@@ -2,18 +2,22 @@ import 'dart:async';
 
 import 'package:fin_fit_app_mobile/helper/category_table_helper.dart';
 import 'package:fin_fit_app_mobile/helper/movement_table_helper.dart';
+import 'package:fin_fit_app_mobile/service/category_service.dart';
 import 'package:fin_fit_app_mobile/service/database.dart';
-import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
 class PersonalizeCategoryPage extends StatefulWidget {
-  const PersonalizeCategoryPage({super.key});
+  // final CategoryService categoryService;
+
+  const PersonalizeCategoryPage({
+    super.key, 
+    // required this.categoryService,
+  });
 
   @override
   State<PersonalizeCategoryPage> createState() => _PersonalizeCategoryPageState();
 }
-
 class _PersonalizeCategoryPageState extends State<PersonalizeCategoryPage> {
 
   late Database _db;
@@ -21,12 +25,12 @@ class _PersonalizeCategoryPageState extends State<PersonalizeCategoryPage> {
   late CategoryTableHelper categoryTableHelper;
   late List<CategoryData> categories;
 
-  late final DatabaseReference _categoriesRef;
-  late List<String> categoriesFirebase;
+  // late List<String> categoriesFirebase = [];
 
   final TextEditingController _categoryNameController = TextEditingController();
   String title = "";
   String actionButton = "";
+  StreamSubscription? _categoriesSubscription;
 
   @override
   void initState() {
@@ -40,24 +44,33 @@ class _PersonalizeCategoryPageState extends State<PersonalizeCategoryPage> {
       _getCategoriesList();
     });
 
-    init();
+    // init();
   }
 
-  void init() async {
-    _categoriesRef = FirebaseDatabase.instance.ref('categories');
-    try {
-      final categoriesSnap = await _categoriesRef.get();
-      categoriesFirebase = categoriesSnap.value as List<String>;
-    } catch (err) {
-      debugPrint(err.toString());
-    }
-
-    _categoriesRef.onValue.listen((event) {
-      setState(() {
-        categoriesFirebase = (event.snapshot.value ?? List.empty()) as List<String>;
-      });  
-    });
+  @override
+  void dispose() {
+    _categoriesSubscription?.cancel();
+    super.dispose();
   }
+
+  // void init() async {
+  //   // 1. Usa o serviço para buscar os dados iniciais
+  //   final initialCategories = await widget.categoryService.getCategories();
+  //   if (mounted) {
+  //     setState(() {
+  //       categoriesFirebase = initialCategories;
+  //     });
+  //   }
+
+  //   // 2. Usa o serviço para ouvir as atualizações
+  //   _categoriesSubscription = widget.categoryService.onCategoriesUpdated().listen((updatedCategories) {
+  //     if (mounted) {
+  //       setState(() {
+  //         categoriesFirebase = updatedCategories;
+  //       });
+  //     }
+  //   });
+  // }
 
   @override
   Widget build(BuildContext context) {

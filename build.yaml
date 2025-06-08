@@ -4,5 +4,6 @@ targets:
       - lib/**
       - pubspec.*
       - $package$
+      - test/**
       # Allows the code generator to target files outside of the lib folder
       - integration_test/**.dart
