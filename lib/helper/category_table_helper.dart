@@ -26,10 +26,6 @@ class CategoryTableHelper extends DatabaseAccessor<Database> with _$CategoryTabl
     return await (select(category)..where((tbl) => tbl.name.equals(name))).getSingleOrNull();
   }
 
-  Future<void> updateCategory(CategoryCompanion entry) async {
-    await (update(category)..where((tbl) => tbl.name.equals(entry.name.value))).write(entry);
-  }
-
   Future<void> updateCategoryById(CategoryCompanion entry, int id) async {
     await (update(category)..where((tbl) => tbl.id.equals(id))).write(entry);
   }
