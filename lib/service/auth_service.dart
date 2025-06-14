@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 
-// INTERFACE (Perfeita como está)
 abstract class IAuthService extends ChangeNotifier {
   Future<void> login(String email, String password);
   Future<void> register(String email, String password);
@@ -12,7 +11,6 @@ abstract class IAuthService extends ChangeNotifier {
   bool get isLoading;
 }
 
-// IMPLEMENTAÇÃO REVISADA
 class AuthService extends IAuthService {
   final FirebaseAuth _auth;
   User? _user;
@@ -32,7 +30,6 @@ class AuthService extends IAuthService {
   void _onAuthStateChanged(User? newUser) {
     if (_user != newUser) {
       _user = newUser;
-      // Sempre que o auth muda, não estamos mais carregando.
       if (_isLoading) {
         _isLoading = false;
       }
@@ -40,7 +37,6 @@ class AuthService extends IAuthService {
     }
   }
 
-  // Getters para expor os estados privados
   @override
   User? get currentUser => _user;
   @override
@@ -59,7 +55,7 @@ class AuthService extends IAuthService {
     try {
       await _auth.createUserWithEmailAndPassword(email: email, password: password);
     } on FirebaseAuthException catch (e) {
-      _setLoading(false); // Para de carregar no erro
+      _setLoading(false);
       if (e.code == 'weak-password') {
         throw AuthException('A senha informada é muito fraca.');
       } else if (e.code == 'email-already-in-use') {
@@ -74,7 +70,7 @@ class AuthService extends IAuthService {
     try {
       await _auth.signInWithEmailAndPassword(email: email, password: password);
     } on FirebaseAuthException catch (e) {
-      _setLoading(false); // Para de carregar no erro
+      _setLoading(false);
       if (e.code == 'user-not-found') {
         throw AuthException('O e-mail informado não foi encontrado.');
       } else if (e.code == 'wrong-password') {
@@ -91,7 +87,6 @@ class AuthService extends IAuthService {
   }
 }
 
-// CLASSE DE EXCEÇÃO (Perfeita como está)
 class AuthException implements Exception {
   final String message;
   AuthException(this.message);

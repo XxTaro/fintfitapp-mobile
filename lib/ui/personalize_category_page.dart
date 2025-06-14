@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:fin_fit_app_mobile/helper/category_table_helper.dart';
 import 'package:fin_fit_app_mobile/helper/movement_table_helper.dart';
-import 'package:fin_fit_app_mobile/service/category_service.dart';
 import 'package:fin_fit_app_mobile/service/database.dart';
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
@@ -115,13 +114,10 @@ class _PersonalizeCategoryPageState extends State<PersonalizeCategoryPage> {
           future: _getCategoriesList(),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
-              // Enquanto o Future ainda está sendo carregado, mostre um indicador de progresso ou algo semelhante
               return const Center(child: CircularProgressIndicator());
             } else if (snapshot.hasError) {
-              // Caso ocorra algum erro, você pode mostrar uma mensagem de erro
               return const Center(child: Text('Erro ao carregar as categorias'));
             } else if (snapshot.hasData) {
-              // Quando o Future retornar os dados, você pode mostrar o card com o saldo
               final List<CategoryData> categories = snapshot.data ?? [];
               return _buildCategoriesListView(categories);
             } else {

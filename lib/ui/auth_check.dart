@@ -28,7 +28,7 @@ class _AuthCheckState extends State<AuthCheck> {
   Widget loading() {
     return const Scaffold(
       body: Center(
-        child: CircularProgressIndicator(key: const ValueKey("authLoadingProgressIndicator"),),
+        child: CircularProgressIndicator(key: ValueKey("authLoadingProgressIndicator"),),
       ),
     );
   }

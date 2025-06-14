@@ -1,5 +1,4 @@
 import 'package:fin_fit_app_mobile/service/auth_service.dart';
-import 'package:fin_fit_app_mobile/service/category_service.dart';
 import 'package:fin_fit_app_mobile/ui/personalize_category_page.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -107,7 +106,6 @@ class MenuItemModel {
   final Icon icon;
   final PageBuilder pageBuilder;
 
-  // Note que o construtor NÃO é const
   MenuItemModel({
     required this.title,
     required this.description,

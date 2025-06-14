@@ -44,13 +44,10 @@ class _MainPage extends State<MainPage> {
               future: getCurrentMonthBalance(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  // Enquanto o Future ainda está sendo carregado, mostre um indicador de progresso ou algo semelhante
                   return _buildCard('Carregando saldo...', [const CircularProgressIndicator()]);
                 } else if (snapshot.hasError) {
-                  // Caso ocorra algum erro, você pode mostrar uma mensagem de erro
                   return _buildCard('Erro ao carregar o saldo', []);
                 } else if (snapshot.hasData) {
-                  // Quando o Future retornar os dados, você pode mostrar o card com o saldo
                   final List<double> currentMonthBalance = snapshot.data ?? [0.0, 0.0];
                   return _buildCard("Saldo em ${returnMonth(DateTime.now())}", resumedCurrentMonthCardBody(currentMonthBalance));
                 } else {

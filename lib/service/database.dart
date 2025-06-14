@@ -31,6 +31,8 @@ class Database extends _$Database {
     fillCategoryTable(this);
   }
 
+  Database.forTesting(super.e);
+
   @override
   int get schemaVersion => 1;
 }
