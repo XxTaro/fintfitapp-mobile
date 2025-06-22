@@ -1,5 +1,3 @@
-// test/services/auth_service_test.dart
-
 import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart';
@@ -57,7 +55,7 @@ void main() {
     group('Login', () {
       test('deve logar com sucesso, atualizar o usuário e o estado de loading',
           () async {
-        // Arrange
+        // Given
         when(mockAuth.signInWithEmailAndPassword(
                 email: 'test@test.com', password: 'password'))
             .thenAnswer((_) async => mockUserCredential);
@@ -65,10 +63,10 @@ void main() {
         int listenerCallCount = 0;
         authService.addListener(() => listenerCallCount++);
 
-        // Act
+        // When
         final loginFuture = authService.login('test@test.com', 'password');
 
-        // Assert (durante a execução)
+        // Then
         expect(authService.isLoading, isTrue);
         expect(listenerCallCount, 1);
 
@@ -80,7 +78,7 @@ void main() {
         // Espera o processo de login terminar
         await loginFuture;
 
-        // Assert (após a execução)
+        // Then (após a execução)
         expect(authService.currentUser, mockUser);
         expect(authService.isLoading, isFalse);
         expect(listenerCallCount, 2);
@@ -90,38 +88,36 @@ void main() {
       });
 
       test('deve lançar AuthException para senha incorreta', () async {
-        // Arrange
+        // Given
         final exception = FirebaseAuthException(code: 'wrong-password');
         when(mockAuth.signInWithEmailAndPassword(
                 email: anyNamed('email'), password: anyNamed('password')))
             .thenThrow(exception);
 
-        // Act & Assert
+        // When & Then
         expect(
           () => authService.login('test@test.com', 'wrongpass'),
           throwsA(isA<AuthException>()
             ..having((e) => e.message, 'message', 'Senha incorreta.')),
         );
-        // Garante que o loading foi desligado mesmo com erro
         expect(authService.isLoading, isFalse);
       });
     });
 
     group('Register', () {
       test('deve registrar um novo usuário com sucesso', () async {
-        // Arrange
+        // Given
         when(mockAuth.createUserWithEmailAndPassword(
                 email: 'new@test.com', password: 'password'))
             .thenAnswer((_) async => mockUserCredential);
 
-        // Act
+        // When
         final registerFuture = authService.register('new@test.com', 'password');
-        // Simula o Firebase notificando o novo usuário
         authStateController.add(mockUser);
         await Future.delayed(Duration.zero);
         await registerFuture;
 
-        // Assert
+        // Then
         expect(authService.currentUser, mockUser);
         expect(authService.isLoading, isFalse);
         verify(mockAuth.createUserWithEmailAndPassword(
@@ -130,13 +126,13 @@ void main() {
       });
 
       test('deve lançar AuthException para email já em uso', () {
-        // Arrange
+        // Given
         final exception = FirebaseAuthException(code: 'email-already-in-use');
         when(mockAuth.createUserWithEmailAndPassword(
                 email: anyNamed('email'), password: anyNamed('password')))
             .thenThrow(exception);
 
-        // Act & Assert
+        // When & Then
         expect(
           () => authService.register('used@test.com', 'password'),
           throwsA(isA<AuthException>()
@@ -149,21 +145,20 @@ void main() {
 
     group('Logout', () {
       test('deve deslogar o usuário e limpar o estado', () async {
-        // Arrange
+        // Given
         authStateController.add(mockUser);
         await Future.delayed(Duration.zero);
         expect(authService.currentUser, mockUser);
 
         when(mockAuth.signOut()).thenAnswer((_) async {});
 
-        // Act
+        // When
         final logoutFuture = authService.logout();
-        // Simula o Firebase notificando que não há mais usuário
         authStateController.add(null);
         await Future.delayed(Duration.zero);
         await logoutFuture;
 
-        // Assert
+        // Then
         expect(authService.currentUser, isNull);
         verify(mockAuth.signOut()).called(1);
       });
@@ -172,18 +167,16 @@ void main() {
 
   group('Dispose', () {
     test('deve cancelar a inscrição do authStateChanges', () async {
+      // Given
       var isCancelled = false;
-      // O onCancel é um callback do StreamController que é chamado
-      // quando a inscrição (subscription) feita nele é cancelada.
       authStateController.onCancel = () {
         isCancelled = true;
       };
 
-      // Act
+      // When
       authService.dispose();
 
-      // Assert
-      // Verificamos se o nosso callback foi de fato chamado.
+      // Then
       expect(isCancelled, isTrue);
     });
   });
