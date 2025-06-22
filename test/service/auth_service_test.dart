@@ -8,6 +8,9 @@ import 'package:mockito/mockito.dart';
 
 import 'auth_service_test.mocks.dart';
 
+// É interessante demonstrar no trabalho comentando todo esse teste e evidenciar que teste de código não pode ser somente
+// baseado pela cobertura, mas sim pela lógica de negócio que está sendo testada. Pois mesmo com esse teste, já existe 
+// cobertura na classe AuthService devido aos outros testes
 @GenerateMocks([
   FirebaseAuth,
   User,
@@ -99,6 +102,22 @@ void main() {
           () => authService.login('test@test.com', 'wrongpass'),
           throwsA(isA<AuthException>()
             ..having((e) => e.message, 'message', 'Senha incorreta.')),
+        );
+        expect(authService.isLoading, isFalse);
+      });
+
+      test('deve lançar AuthException para usuário não encontrado', () async {
+        // Given
+        final exception = FirebaseAuthException(code: 'user-not-found');
+        when(mockAuth.signInWithEmailAndPassword(
+                email: anyNamed('email'), password: anyNamed('password')))
+            .thenThrow(exception);
+
+        // When & Then
+        expect(
+          () => authService.login('test@test.com', 'wrongpass'),
+          throwsA(isA<AuthException>()
+            ..having((e) => e.message, 'message', 'Usuário não encontrado.')),
         );
         expect(authService.isLoading, isFalse);
       });
