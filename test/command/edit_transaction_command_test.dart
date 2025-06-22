@@ -1,4 +1,4 @@
-import 'package:fin_fit_app_mobile/command/delete_transaction_command.dart';
+import 'package:fin_fit_app_mobile/command/edit_transaction_command.dart';
 import 'package:fin_fit_app_mobile/service/database.dart';
 import 'package:fin_fit_app_mobile/ui/transaction_page.dart';
 import 'package:flutter/material.dart';
@@ -6,7 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 
-import 'delete_transaction_command_test.mocks.dart';
+import 'edit_transaction_command_test.mocks.dart';
 
 @GenerateMocks([TransactionPage, BuildContext])
 void main() {
@@ -21,22 +21,23 @@ void main() {
     
     testMovementData = MovementData(
       id: 1,
-      description: 'Teste',
+      description: 'Item para Editar',
       isIncome: false,
-      value: 100.0,
-      categoryId: 1,
-      timestamp: DateTime.now(),
-      createdAt: DateTime.now(),
-      updatedAt: DateTime.now(),
+      value: 123.45,
+      categoryId: 2,
+      timestamp: DateTime(2025, 6, 22),
+      createdAt: DateTime(2025, 6, 22),
+      updatedAt: DateTime(2025, 6, 22),
     );
   });
 
-  test('verificando se o método showDeleteTransactionDialog foi chamado com o item correto', () async {
+  test('verificando se os métodos setFields e showAddOrEditTransactionDialog foram chamados corretamente',
+      () async {
     // Given
-    when(mockTransactionPage.showDeleteTransactionDialog(any))
+    when(mockTransactionPage.showAddOrEditTransactionDialog(any, any))
         .thenAnswer((_) async {});
 
-    final command = DeleteTransactionCommand(
+    final command = EditTransactionCommand(
       mockBuildContext,
       mockTransactionPage,
       testMovementData,
@@ -46,6 +47,8 @@ void main() {
     await command.execute();
 
     // Then
-    verify(mockTransactionPage.showDeleteTransactionDialog(testMovementData)).called(1);
+    verify(mockTransactionPage.setFields(testMovementData)).called(1);
+    verify(mockTransactionPage.showAddOrEditTransactionDialog(false, testMovementData)).called(1);
+    verifyNoMoreInteractions(mockTransactionPage);
   });
 }
