@@ -37,7 +37,7 @@ class Database extends _$Database {
   int get schemaVersion => 1;
 }
 
-void fillCategoryTable(Database db) async {
+Future<void> fillCategoryTable(Database db) async {
   CategoryTableHelper categoryTableHelper = CategoryTableHelper(db);
   Future<List<CategoryData>> allCategoriesFuture = categoryTableHelper.getAllCategories();
   List<CategoryData> allCategories = await allCategoriesFuture;
