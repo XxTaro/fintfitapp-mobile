@@ -9,21 +9,21 @@ import 'package:intl/intl.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
 class MainPage extends StatefulWidget {
-  const MainPage({super.key});
+  final MovementTableHelper? movementTableHelper;
+
+  const MainPage({super.key, this.movementTableHelper});
 
   @override
   State<MainPage> createState() => _MainPage();
 }
 
 class _MainPage extends State<MainPage> {
-  late Database _db;
   late MovementTableHelper movementTableHelper;
 
   @override
   void initState() {
     super.initState();
-    _db = DatabaseConnection.instance;
-    movementTableHelper = MovementTableHelper(_db);
+    movementTableHelper = widget.movementTableHelper ?? MovementTableHelper(DatabaseConnection.instance);
   }
 
   @override
@@ -45,13 +45,11 @@ class _MainPage extends State<MainPage> {
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return _buildCard('Carregando saldo...', [const CircularProgressIndicator()]);
-                } else if (snapshot.hasError) {
-                  return _buildCard('Erro ao carregar o saldo', []);
                 } else if (snapshot.hasData) {
                   final List<double> currentMonthBalance = snapshot.data ?? [0.0, 0.0];
                   return _buildCard("Saldo em ${returnMonth(DateTime.now())}", resumedCurrentMonthCardBody(currentMonthBalance));
                 } else {
-                  return _buildCard('Nenhum dado disponível', []);
+                  return _buildCard('Erro ao carregar o saldo', []);
                 }
               },
             ),
