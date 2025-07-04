@@ -15,7 +15,16 @@ import '../command/delete_transaction_command.dart';
 import '../command/edit_transaction_command.dart';
 
 class TransactionPageStateful extends StatefulWidget {
-  const TransactionPageStateful({super.key});
+  final MovementTableHelper? movementTableHelper;
+  final CategoryTableHelper? categoryTableHelper;
+  final String? locale;
+
+  const TransactionPageStateful({
+    super.key,
+    this.movementTableHelper,
+    this.categoryTableHelper,
+    this.locale,
+  });
 
   @override
   State<TransactionPageStateful> createState() => TransactionPage();
@@ -31,8 +40,7 @@ class TransactionPage extends State<TransactionPageStateful> {
 
   static const int editTransaction = 1;
   static const int deleteTransaction = 2;
-  
-  late Database _db;
+
   late MovementTableHelper movementTableHelper;
   late CategoryTableHelper categoryTableHelper;
   late List<CategoryData> categories;
@@ -40,23 +48,24 @@ class TransactionPage extends State<TransactionPageStateful> {
   late List<MovementData> transactions = [];
   late String title;
   late String actionButton;
- 
+  late String locale;
+
   final TextEditingController _dateController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
   final TextEditingController _valueController = TextEditingController();
-  List<bool> isEntryOrExit = [
-    true,
-    false
-  ];
+  List<bool> isEntryOrExit = [true, false];
 
   @override
   void initState() {
     super.initState();
-    _db = DatabaseConnection.instance;
-    movementTableHelper = MovementTableHelper(_db);
-    categoryTableHelper = CategoryTableHelper(_db);
+    movementTableHelper = widget.movementTableHelper ??
+        MovementTableHelper(DatabaseConnection.instance);
+    categoryTableHelper = widget.categoryTableHelper ??
+        CategoryTableHelper(DatabaseConnection.instance);
+    locale = widget.locale ?? Platform.localeName;
     setState(() {
-      date = returnMonthAndYear(DateTime(DateTime.now().year, DateTime.now().month - _dateDiff, DateTime.now().day));
+      date = returnMonthAndYear(DateTime(DateTime.now().year,
+          DateTime.now().month - _dateDiff, DateTime.now().day));
     });
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       _setCategoriesList();
@@ -66,23 +75,24 @@ class TransactionPage extends State<TransactionPageStateful> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      home: Scaffold(
-        body: SafeArea(
-          child: Column(
-            children: [
-              _buildTransactionHeader(),
-              _buildDateSelection(),
-              Expanded(child: Padding(
-                padding: const EdgeInsets.all(10),
-                child: _fillTransactionContainer()
-              ),),
-              Row(
-                children: [
-                  Expanded(
+    return Scaffold(
+      body: SafeArea(
+        child: Column(
+          children: [
+            _buildTransactionHeader(),
+            _buildDateSelection(),
+            Expanded(
+              child: Padding(
+                  padding: const EdgeInsets.all(10),
+                  child: _fillTransactionContainer()),
+            ),
+            Row(
+              children: [
+                Expanded(
                     flex: 80,
                     child: Padding(
-                      padding: const EdgeInsets.only(left: 10, right: 10, bottom: 10),
+                      padding: const EdgeInsets.only(
+                          left: 10, right: 10, bottom: 10),
                       child: TextFormField(
                         decoration: const InputDecoration(
                           contentPadding: EdgeInsets.all(0),
@@ -91,20 +101,19 @@ class TransactionPage extends State<TransactionPageStateful> {
                         ),
                         onChanged: _onSearchChanged,
                       ),
-                    )
-                  ),
-                ],
-              )
-            ],
-          ),
+                    )),
+              ],
+            )
+          ],
         ),
       ),
-    );  
+    );
   }
 
   Future<void> _onSearchChanged(String value) async {
-    List<MovementData> list = await movementTableHelper.getByContainsNameAndDate(
-      value, 
+    List<MovementData> list =
+        await movementTableHelper.getByContainsNameAndDate(
+      value,
       DateTime(
         DateTime.now().year,
         DateTime.now().month + _dateDiff,
@@ -115,24 +124,23 @@ class TransactionPage extends State<TransactionPageStateful> {
   }
 
   void _setCategoriesList() async {
-    List<CategoryData> list = await Future.value(categoryTableHelper.getAllCategories());
+    List<CategoryData> list =
+        await Future.value(categoryTableHelper.getAllCategories());
     categories = list;
   }
 
   void _setMovementList() async {
-    List<MovementData> list = await Future.value(movementTableHelper.getByMonth(DateTime(
-      DateTime.now().year,
-      DateTime.now().month + _dateDiff
-    )));
+    List<MovementData> list = await Future.value(movementTableHelper.getByMonth(
+        DateTime(DateTime.now().year, DateTime.now().month + _dateDiff)));
     transactions = list;
     setState(_fillTransactionContainer);
   }
 
   void _setFilteredMovementList(CategoryData? categoryData) async {
-    List<MovementData> list = await Future.value(movementTableHelper.getByMonthAndCategory(DateTime(
-      DateTime.now().year,
-      DateTime.now().month + _dateDiff
-    ), categoryData));
+    List<MovementData> list = await Future.value(
+        movementTableHelper.getByMonthAndCategory(
+            DateTime(DateTime.now().year, DateTime.now().month + _dateDiff),
+            categoryData));
     transactions = list;
     setState(_fillTransactionContainer);
   }
@@ -140,62 +148,66 @@ class TransactionPage extends State<TransactionPageStateful> {
   Widget _fillTransactionContainer() {
     if (transactions.isEmpty) {
       return const Center(
-        child: Text('Não existem transações para o mês e ano selecionado!')
-      );
+          child: Text('Não existem transações para o mês e ano selecionado!'));
     }
-    
+
     return SingleChildScrollView(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: _getTransactions()
-      ),
+      child:
+          Column(mainAxisSize: MainAxisSize.min, children: _getTransactions()),
     );
   }
 
   List<Widget> _getTransactions() {
     return containers = transactions.map((item) {
-        return Flexible(
+      return Flexible(
           fit: FlexFit.loose,
           child: Container(
             margin: const EdgeInsets.all(2),
             child: Material(
-              child: Ink(
-                width: 500,
-                decoration: BoxDecoration(
-                  color: Colors.grey[300],
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: InkWell(
-                  highlightColor: Colors.grey[700],
-                  borderRadius: BorderRadius.circular(6),
-                  onTapDown: (details) async => await _showPopupMenu(details.globalPosition, item),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(DateFormat('dd/MM/yyyy').format(item.timestamp)),
-                        const SizedBox(height: 5),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Row(children: [
-                              getInflowOrOutflowIcon(item.isIncome),
-                              const SizedBox(width: 5),
-                              Text(item.description, style: const TextStyle(fontSize: 18))
-                            ]),
-                            Text('R\$ ${item.value.toStringAsFixed(2).replaceAll(r'.', ',')}', style: const TextStyle(fontSize: 18)) 
-                          ]
-                        )
-                      ],
-                    )
-                  )
-                )
-              )
-            ),
-          )
-        );
-      }).toList();
+                child: Ink(
+                    width: 500,
+                    decoration: BoxDecoration(
+                      color: Colors.grey[300],
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: InkWell(
+                        highlightColor: Colors.grey[700],
+                        borderRadius: BorderRadius.circular(6),
+                        onTapDown: (details) async =>
+                            await _showPopupMenu(details.globalPosition, item),
+                        child: Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(DateFormat('dd/MM/yyyy')
+                                    .format(item.timestamp)),
+                                const SizedBox(height: 5),
+                                Row(children: [
+                                  Expanded(
+                                    child: Row(children: [
+                                      getInflowOrOutflowIcon(item.isIncome),
+                                      const SizedBox(width: 5),
+                                      Expanded(
+                                          child: Text(
+                                        item.description,
+                                        style: const TextStyle(fontSize: 18),
+                                        overflow: TextOverflow
+                                            .ellipsis,
+                                      ))
+                                    ]),
+                                  ),
+                                  const SizedBox(
+                                      width:
+                                          8),
+                                  Text(
+                                      'R\$ ${item.value.toStringAsFixed(2).replaceAll(r'.', ',')}',
+                                      style: const TextStyle(fontSize: 18))
+                                ])
+                              ],
+                            ))))),
+          ));
+    }).toList();
   }
 
   void setTransactionDialogText(bool isToAdd) {
@@ -203,7 +215,7 @@ class TransactionPage extends State<TransactionPageStateful> {
       title = "Adicionar transação";
       actionButton = "Adicionar";
       return;
-    } 
+    }
     title = "Editar transação";
     actionButton = "Editar";
   }
@@ -213,17 +225,18 @@ class TransactionPage extends State<TransactionPageStateful> {
       editTransaction: EditTransactionCommand(context, this, item),
       deleteTransaction: DeleteTransactionCommand(context, this, item),
     };
-  
+
     final value = await showMenu(
       context: context,
-      position: RelativeRect.fromLTRB(globalPosition.dx, globalPosition.dy, globalPosition.dx, globalPosition.dy),
+      position: RelativeRect.fromLTRB(globalPosition.dx, globalPosition.dy,
+          globalPosition.dx, globalPosition.dy),
       items: const [
         PopupMenuItem(value: editTransaction, child: Text("Editar")),
         PopupMenuItem(value: deleteTransaction, child: Text("Deletar")),
       ],
       elevation: 8.0,
     );
-  
+
     if (value != null) {
       await commands[value]?.execute();
     }
@@ -258,56 +271,55 @@ class TransactionPage extends State<TransactionPageStateful> {
 
   Widget _buildTransactionHeader() {
     return Padding(
-      padding: const EdgeInsets.only(left: 20, right: 20, top: 20), 
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          const Center(
-            child: Text('Transações', style: TextStyle(fontSize: 28))
-          ),
-          Positioned(
-            left: 0, 
-            child: IconButton(
-              onPressed: _showFilterTransactionDialog,
-              icon: (_selectedFilterCategory == null) ? const Icon(Icons.filter_alt_off, size: 28) : const Icon(Icons.filter_alt_rounded, size: 28),
-            ) 
-          ),
-          Positioned(
-            right: 0, 
-            child: IconButton(
-              onPressed: () {
-                _descriptionController.clear();
-                _valueController.clear();
-                _dateController.clear();
-                _dateController.text = DateFormat('dd/MM/yyyy').format(DateTime.now());
-                _selectedGoal = null;
-                _selectedCategory = null;
-                isEntryOrExit = [true, false];
-                showAddOrEditTransactionDialog(true, null);
-              }, 
-              icon: const Icon(Icons.add, size: 28)
-            )
-          )
-        ],
-      )
-    );
+        padding: const EdgeInsets.only(left: 20, right: 20, top: 20),
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            const Center(
+                child: Text('Transações', style: TextStyle(fontSize: 28))),
+            Positioned(
+                left: 0,
+                child: IconButton(
+                  onPressed: _showFilterTransactionDialog,
+                  icon: (_selectedFilterCategory == null)
+                      ? const Icon(Icons.filter_alt_off, size: 28)
+                      : const Icon(Icons.filter_alt_rounded, size: 28),
+                )),
+            Positioned(
+                right: 0,
+                child: IconButton(
+                    onPressed: () {
+                      _descriptionController.clear();
+                      _valueController.clear();
+                      _dateController.clear();
+                      _dateController.text =
+                          DateFormat('dd/MM/yyyy').format(DateTime.now());
+                      _selectedGoal = null;
+                      _selectedCategory = null;
+                      isEntryOrExit = [true, false];
+                      showAddOrEditTransactionDialog(true, null);
+                    },
+                    icon: const Icon(Icons.add, size: 28)))
+          ],
+        ));
   }
 
-  Future<void> showAddOrEditTransactionDialog(bool isToAdd, MovementData? item) async {
+  Future<void> showAddOrEditTransactionDialog(
+      bool isToAdd, MovementData? item) async {
     setTransactionDialogText(isToAdd);
     final result = await _addOrEditTransactionDialog(isToAdd, item);
 
     if (result == true && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text("Transação salva!"),
-          backgroundColor: Colors.green,
-        )
-      );
+        content: Text("Transação salva!"),
+        backgroundColor: Colors.green,
+      ));
       _setMovementList();
     }
   }
 
-  Future<bool?> _addOrEditTransactionDialog(bool isToAdd, MovementData? item) async {
+  Future<bool?> _addOrEditTransactionDialog(
+      bool isToAdd, MovementData? item) async {
     return showDialog<bool?>(
       context: context,
       barrierDismissible: false,
@@ -320,7 +332,8 @@ class TransactionPage extends State<TransactionPageStateful> {
               ),
               backgroundColor: Colors.white,
               insetPadding: EdgeInsets.zero,
-              contentPadding: const EdgeInsets.only(left: 24, right: 24, top: 24, bottom: 24),
+              contentPadding: const EdgeInsets.only(
+                  left: 24, right: 24, top: 24, bottom: 24),
               clipBehavior: Clip.antiAliasWithSaveLayer,
               title: Text(title),
               content: SizedBox(
@@ -335,8 +348,8 @@ class TransactionPage extends State<TransactionPageStateful> {
                           disabledBorderColor: Colors.grey,
                           selectedColor: Colors.deepPurple,
                           selectedBorderColor: Colors.deepPurple,
-                          borderRadius: const BorderRadius.all(Radius.circular(8)),
-
+                          borderRadius:
+                              const BorderRadius.all(Radius.circular(8)),
                           isSelected: isEntryOrExit,
                           onPressed: (int index) {
                             setState(() {
@@ -393,7 +406,10 @@ class TransactionPage extends State<TransactionPageStateful> {
                           labelText: 'Valor',
                           hintText: '0,00',
                         ),
-                        inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'^\d+(,\d{0,2})?$'))],
+                        inputFormatters: [
+                          FilteringTextInputFormatter.allow(
+                              RegExp(r'^\d+(,\d{0,2})?$'))
+                        ],
                         keyboardType: TextInputType.number,
                       ),
                       const SizedBox(height: 20),
@@ -494,7 +510,8 @@ class TransactionPage extends State<TransactionPageStateful> {
               ),
               backgroundColor: Colors.white,
               insetPadding: EdgeInsets.zero,
-              contentPadding: const EdgeInsets.only(left: 24, right: 24, top: 24, bottom: 24),
+              contentPadding: const EdgeInsets.only(
+                  left: 24, right: 24, top: 24, bottom: 24),
               clipBehavior: Clip.antiAliasWithSaveLayer,
               title: const Text("Filtrar transações"),
               content: SizedBox(
@@ -606,12 +623,11 @@ class TransactionPage extends State<TransactionPageStateful> {
 
     if (result == true && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text("Transação deletada!"),
-          backgroundColor: Colors.red,
-        )
-      );
+        content: Text("Transação deletada!"),
+        backgroundColor: Colors.red,
+      ));
       _setMovementList();
-    } 
+    }
   }
 
   Future<bool?> _deleteTransactionDialog(MovementData item) async {
@@ -628,7 +644,8 @@ class TransactionPage extends State<TransactionPageStateful> {
               backgroundColor: Colors.white,
               insetPadding: EdgeInsets.zero,
               title: const Text('Deletar transação'),
-              content: const Text('Você deseja realmente deletar essa transação?\n\nEssa ação não poderá ser desfeita.'),
+              content: const Text(
+                  'Você deseja realmente deletar essa transação?\n\nEssa ação não poderá ser desfeita.'),
               actions: <Widget>[
                 TextButton(
                   child: const Text('Não'),
@@ -654,11 +671,10 @@ class TransactionPage extends State<TransactionPageStateful> {
   Future<void> _selectDate() async {
     DateTime currentDate = DateFormat("dd/MM/yyyy").parse(_dateController.text);
     DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: currentDate,
-      firstDate: DateTime(2000), 
-      lastDate: DateTime(2100)
-    );
+        context: context,
+        initialDate: currentDate,
+        firstDate: DateTime(2000),
+        lastDate: DateTime(2100));
 
     if (picked != null) {
       setState(() {
@@ -669,55 +685,53 @@ class TransactionPage extends State<TransactionPageStateful> {
 
   Widget _buildDateSelection() {
     return Padding(
-      padding: const EdgeInsets.only(top: 30), 
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          Center(
-            child: Text(date, style: const TextStyle(fontSize: 18))
-          ),
-          Positioned(
-            left: 0,
-            child: Container(
-              margin: const EdgeInsets.only(left: 20),
-              child: IconButton(
-                  icon: const Icon(Icons.arrow_back_ios, size: 24), 
-                  onPressed: () {
-                    setState(() {
-                      _dateDiff--;
-                      date = returnMonthAndYear(DateTime(DateTime.now().year, DateTime.now().month + _dateDiff, DateTime.now().day));
-                      _setMovementList();
-                    });
-                  },
-                ),
-            ) 
-          ),
-          Positioned(
-            right: 0,
-            child: Container(
-              margin: const EdgeInsets.only(right: 20),
-              child: IconButton(
-                  icon: const Icon(Icons.arrow_forward_ios, size: 24), 
-                  onPressed: () {
-                    setState(() {
-                      _dateDiff++;
-                      date = returnMonthAndYear(DateTime(DateTime.now().year, DateTime.now().month + _dateDiff, DateTime.now().day));
-                      _setMovementList();
-                    });
-                  },
-                )
-            ) 
-          )
-        ],
-      )
-    );
+        padding: const EdgeInsets.only(top: 30),
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            Center(child: Text(date, style: const TextStyle(fontSize: 18))),
+            Positioned(
+                left: 0,
+                child: Container(
+                  margin: const EdgeInsets.only(left: 20),
+                  child: IconButton(
+                    icon: const Icon(Icons.arrow_back_ios, size: 24),
+                    onPressed: () {
+                      setState(() {
+                        _dateDiff--;
+                        date = returnMonthAndYear(DateTime(
+                            DateTime.now().year,
+                            DateTime.now().month + _dateDiff,
+                            DateTime.now().day));
+                        _setMovementList();
+                      });
+                    },
+                  ),
+                )),
+            Positioned(
+                right: 0,
+                child: Container(
+                    margin: const EdgeInsets.only(right: 20),
+                    child: IconButton(
+                      icon: const Icon(Icons.arrow_forward_ios, size: 24),
+                      onPressed: () {
+                        setState(() {
+                          _dateDiff++;
+                          date = returnMonthAndYear(DateTime(
+                              DateTime.now().year,
+                              DateTime.now().month + _dateDiff,
+                              DateTime.now().day));
+                          _setMovementList();
+                        });
+                      },
+                    )))
+          ],
+        ));
   }
 
   String returnMonthAndYear(DateTime date) {
     initializeDateFormatting();
-    String locale = Platform.localeName;
 
     return DateFormat.yMMMM(locale).format(date);
   }
-  
 }
