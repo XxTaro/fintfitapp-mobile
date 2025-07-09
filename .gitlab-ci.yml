@@ -5,7 +5,7 @@ stages:
 flutter_test_coverage:
   stage: test_and_coverage
   tags:
-    - docker-cmd
+    #- docker-cmd
     - gitlab-org-docker
   image:
     name: instrumentisto/flutter:3.29
@@ -25,7 +25,7 @@ flutter_test_coverage:
 sonarqube-check:
   stage: sonarqube
   tags:
-    - docker-cmd
+    #- docker-cmd
     - gitlab-org-docker
   image:
     name: instrumentisto/flutter:3.29
