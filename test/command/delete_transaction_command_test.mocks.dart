@@ -223,6 +223,23 @@ class MockTransactionPage extends _i1.Mock implements _i4.TransactionPage {
   );
 
   @override
+  String get locale =>
+      (super.noSuchMethod(
+            Invocation.getter(#locale),
+            returnValue: _i7.dummyValue<String>(
+              this,
+              Invocation.getter(#locale),
+            ),
+          )
+          as String);
+
+  @override
+  set locale(String? _locale) => super.noSuchMethod(
+    Invocation.setter(#locale, _locale),
+    returnValueForMissingStub: null,
+  );
+
+  @override
   List<bool> get isEntryOrExit =>
       (super.noSuchMethod(
             Invocation.getter(#isEntryOrExit),

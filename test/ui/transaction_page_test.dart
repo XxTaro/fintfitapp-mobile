@@ -4,6 +4,7 @@ import 'package:fin_fit_app_mobile/helper/movement_table_helper.dart';
 import 'package:fin_fit_app_mobile/service/database.dart';
 import 'package:fin_fit_app_mobile/ui/transaction_page.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg_test/flutter_svg_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
@@ -172,7 +173,7 @@ void main() {
     });
 
     testWidgets(
-        'deve abrir um diálogo e adicionar uma nova transação com sucesso',
+        'deve abrir um diálogo e adicionar uma nova transação de entrada com sucesso',
         (tester) async {
       // Given: A tela está aberta e os helpers configurados
       when(mockMovementHelper.getByMonth(any)).thenAnswer((_) async => []);
@@ -215,6 +216,145 @@ void main() {
       expect(addedItem.categoryId.value, 2); // ID de 'Moradia'
       expect(find.byType(AlertDialog), findsNothing);
     });
+  });
+
+  testWidgets(
+      'deve exibir o ícone de entrada ao adicionar uma transação de entrada',
+      (tester) async {
+    // Given: A tela está aberta e os helpers configurados
+    when(mockMovementHelper.getByMonth(any)).thenAnswer((_) async => []);
+
+    await tester.pumpWidget(createTransactionPageScreen(
+      movementHelper: mockMovementHelper,
+      categoryHelper: mockCategoryHelper,
+    ));
+    await tester.pumpAndSettle();
+
+    // When: O usuário clica no botão de adicionar (+)
+    await tester.tap(find.byIcon(Icons.add));
+    await tester.pumpAndSettle();
+
+    // Then: O diálogo de adicionar deve aparecer
+    expect(find.text('Adicionar transação'), findsOneWidget);
+
+    // When: O usuário preenche o formulário e seleciona "Entrada"
+    await tester.enterText(
+        find.widgetWithText(TextField, 'Descrição'), 'Recebimento de Bônus');
+    await tester.enterText(find.widgetWithText(TextField, 'Valor'), '500,00');
+
+    // Clica em "Entrada" no ToggleButtons para mudar o tipo da transação
+    await tester.tap(find.text('Entrada'));
+    await tester
+        .pump(); // pump para reconstruir a UI do diálogo com a nova seleção
+
+    // Seleciona a categoria "Salário" no dropdown
+    await tester.tap(find.text('Categoria'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Salário').last);
+    await tester.pumpAndSettle();
+
+    // Configura o mock para, APÓS a adição, retornar a nova transação de entrada
+    final newIncomeMovement = MovementData(
+        id: 3,
+        description: 'Recebimento de Bônus',
+        isIncome: true, // <-- Importante: é uma entrada
+        value: 500.00,
+        categoryId: 1,
+        timestamp: DateTime(2025, 7, 8),
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now());
+    when(mockMovementHelper.getByMonth(any))
+        .thenAnswer((_) async => [newIncomeMovement]);
+
+    // Clica no botão "Adicionar" do diálogo
+    await tester.tap(find.widgetWithText(TextButton, 'Adicionar'));
+    await tester.pumpAndSettle();
+
+    // Then: A lógica de negócio e a UI devem ser atualizadas
+    // 1. Verifica se addTransaction foi chamado com isIncome: true
+    final captured =
+        verify(mockMovementHelper.addTransaction(captureAny)).captured;
+    final MovementCompanion addedItem = captured.first;
+    expect(addedItem.description.value, 'Recebimento de Bônus');
+    expect(addedItem.isIncome.value, isTrue);
+
+    // 2. Verifica se a SnackBar de sucesso apareceu
+    expect(find.byType(SnackBar), findsOneWidget);
+    expect(find.text('Transação salva!'), findsOneWidget);
+
+    // 3. Verifica se a nova transação está na tela
+    expect(find.text('Recebimento de Bônus'), findsOneWidget);
+    expect(find.svgAssetWithPath('assets/ic_arrow_circle_up_24.svg'),
+        findsOneWidget);
+    expect(find.svgAssetWithPath('assets/ic_arrow_circle_down_24.svg'),
+        findsNothing);
+  });
+
+  testWidgets(
+      'deve exibir o ícone de saída ao adicionar uma transação de saída',
+      (tester) async {
+    // Given: A tela está aberta e os helpers configurados
+    when(mockMovementHelper.getByMonth(any)).thenAnswer((_) async => []);
+
+    await tester.pumpWidget(createTransactionPageScreen(
+      movementHelper: mockMovementHelper,
+      categoryHelper: mockCategoryHelper,
+    ));
+    await tester.pumpAndSettle();
+
+    // When: O usuário clica no botão de adicionar (+)
+    await tester.tap(find.byIcon(Icons.add));
+    await tester.pumpAndSettle();
+
+    // Then: O diálogo de adicionar deve aparecer
+    expect(find.text('Adicionar transação'), findsOneWidget);
+
+    // When: O usuário preenche o formulário e seleciona "Saída"
+    await tester.enterText(
+        find.widgetWithText(TextField, 'Descrição'), 'Conta de Luz');
+    await tester.enterText(find.widgetWithText(TextField, 'Valor'), '180,00');
+
+    // Clica em "Saída" no ToggleButtons
+    await tester.tap(find.text('Saída'));
+    await tester.pump(); // pump para reconstruir a UI do diálogo
+
+    // Seleciona a categoria "Moradia" no dropdown
+    await tester.tap(find.text('Categoria'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Moradia').last);
+    await tester.pumpAndSettle();
+
+    // Configura o mock para, APÓS a adição, retornar a nova transação de saída
+    final newExpenseMovement = MovementData(
+        id: 4,
+        description: 'Conta de Luz',
+        isIncome: false, // <-- Importante: é uma saída
+        value: 180.00,
+        categoryId: 2,
+        timestamp: DateTime(2025, 7, 8),
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now());
+    when(mockMovementHelper.getByMonth(any))
+        .thenAnswer((_) async => [newExpenseMovement]);
+
+    // Clica no botão "Adicionar" do diálogo
+    await tester.tap(find.widgetWithText(TextButton, 'Adicionar'));
+    await tester.pumpAndSettle();
+
+    // Then: A lógica de negócio e a UI devem ser atualizadas
+    // 1. Verifica se addTransaction foi chamado com isIncome: false
+    final captured =
+        verify(mockMovementHelper.addTransaction(captureAny)).captured;
+    final MovementCompanion addedItem = captured.first;
+    expect(addedItem.description.value, 'Conta de Luz');
+    expect(addedItem.isIncome.value, isFalse);
+
+    // 2. Verifica se a nova transação está na tela
+    expect(find.text('Conta de Luz'), findsOneWidget);
+    expect(find.svgAssetWithPath('assets/ic_arrow_circle_down_24.svg'),
+        findsOneWidget);
+    expect(find.svgAssetWithPath('assets/ic_arrow_circle_up_24.svg'),
+        findsNothing);
   });
 
   testWidgets('deve abrir menu, deletar transação e atualizar a UI',
@@ -364,7 +504,7 @@ void main() {
     // 1. Verifica se o helper foi chamado com a categoria correta
     verify(mockMovementHelper.getByMonthAndCategory(
       any,
-      argThat(isA<CategoryData>()..having((c) => c.id, 'id', 2)),
+      argThat(isA<CategoryData>().having((c) => c.id, 'id', 2)),
     )).called(1);
 
     // 2. Verifica a UI

@@ -1,17 +1,16 @@
 import 'dart:async';
 
 import 'package:fin_fit_app_mobile/helper/category_table_helper.dart';
-import 'package:fin_fit_app_mobile/helper/movement_table_helper.dart';
 import 'package:fin_fit_app_mobile/service/database.dart';
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
 class PersonalizeCategoryPage extends StatefulWidget {
-  // final CategoryService categoryService;
+  final CategoryTableHelper? categoryTableHelper;
 
   const PersonalizeCategoryPage({
-    super.key, 
-    // required this.categoryService,
+    super.key,
+    this.categoryTableHelper,
   });
 
   @override
@@ -19,12 +18,8 @@ class PersonalizeCategoryPage extends StatefulWidget {
 }
 class _PersonalizeCategoryPageState extends State<PersonalizeCategoryPage> {
 
-  late Database _db;
-  late MovementTableHelper movementTableHelper;
   late CategoryTableHelper categoryTableHelper;
   late List<CategoryData> categories;
-
-  // late List<String> categoriesFirebase = [];
 
   final TextEditingController _categoryNameController = TextEditingController();
   String title = "";
@@ -34,16 +29,11 @@ class _PersonalizeCategoryPageState extends State<PersonalizeCategoryPage> {
   @override
   void initState() {
     super.initState();
-
-    _db = DatabaseConnection.instance;
-    movementTableHelper = MovementTableHelper(_db);
-    categoryTableHelper = CategoryTableHelper(_db);
+    categoryTableHelper = widget.categoryTableHelper ?? CategoryTableHelper(DatabaseConnection.instance);
 
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       _getCategoriesList();
     });
-
-    // init();
   }
 
   @override
@@ -51,25 +41,6 @@ class _PersonalizeCategoryPageState extends State<PersonalizeCategoryPage> {
     _categoriesSubscription?.cancel();
     super.dispose();
   }
-
-  // void init() async {
-  //   // 1. Usa o serviço para buscar os dados iniciais
-  //   final initialCategories = await widget.categoryService.getCategories();
-  //   if (mounted) {
-  //     setState(() {
-  //       categoriesFirebase = initialCategories;
-  //     });
-  //   }
-
-  //   // 2. Usa o serviço para ouvir as atualizações
-  //   _categoriesSubscription = widget.categoryService.onCategoriesUpdated().listen((updatedCategories) {
-  //     if (mounted) {
-  //       setState(() {
-  //         categoriesFirebase = updatedCategories;
-  //       });
-  //     }
-  //   });
-  // }
 
   @override
   Widget build(BuildContext context) {
