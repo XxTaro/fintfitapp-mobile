@@ -262,6 +262,14 @@ class MockMovementTableHelper extends _i1.Mock
           as _i5.Future<List<_i2.MovementData>>);
 
   @override
+  _i5.Future<_i2.MovementData?> getById(int? id) =>
+      (super.noSuchMethod(
+            Invocation.method(#getById, [id]),
+            returnValue: _i5.Future<_i2.MovementData?>.value(),
+          )
+          as _i5.Future<_i2.MovementData?>);
+
+  @override
   _i5.Future<int> deleteTransaction(int? id) =>
       (super.noSuchMethod(
             Invocation.method(#deleteTransaction, [id]),

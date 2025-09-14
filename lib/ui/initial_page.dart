@@ -1,3 +1,4 @@
+import 'package:fin_fit_app_mobile/ui/goal_page.dart';
 import 'package:fin_fit_app_mobile/ui/main_page.dart';
 import 'package:fin_fit_app_mobile/ui/menu_page.dart';
 import 'package:fin_fit_app_mobile/ui/transaction_page.dart';
@@ -20,7 +21,7 @@ class _InitialPageState extends State<InitialPage> {
   List<Widget> body = [
     const MainPage(key: Key('statefulMainPage')),
     const TransactionPageStateful(key: Key('statefulTransactionPage')),
-    SvgPicture.asset("assets/ic_target_24.svg", height: 24, width: 24),
+    const GoalPageStateful(key: Key('statefulGoalPage')),
     const MenuPageState(key: Key('statefulMenuPage'),),
   ];
 

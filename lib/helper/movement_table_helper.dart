@@ -26,11 +26,19 @@ class MovementTableHelper extends DatabaseAccessor<Database> with _$MovementTabl
     return (await (select(movement)..where((tbl) => tbl.timestamp.month.equals(date.month) & tbl.timestamp.year.equals(date.year) & tbl.categoryId.equals(categoryId.id))).get()).reversed.toList();
   }
 
+  Future<MovementData?> getById(int id) async {
+    return await (select(movement)..where((tbl) => tbl.id.equals(id))).getSingleOrNull();
+  }
+
   Future<int> deleteTransaction(int id) async {
     return await (delete(movement)..where((tbl) => tbl.id.equals(id))).go();
   }
 
   Future<int> updateTransaction(MovementCompanion entry) async {
     return await (update(movement)..where((tbl) => tbl.id.equals(entry.id.value))).write(entry);
+  }
+
+  Future<List<MovementData>> getByGoalId(int goalId) async {
+    return (await (select(movement)..where((tbl) => tbl.goalId.equals(goalId))).get()).reversed.toList();
   }
 }

@@ -1,4 +1,4 @@
-import 'package:fin_fit_app_mobile/command/edit_transaction_command.dart';
+import 'package:fin_fit_app_mobile/command/edit_popup_command.dart';
 import 'package:fin_fit_app_mobile/service/database.dart';
 import 'package:fin_fit_app_mobile/ui/transaction_page.dart';
 import 'package:flutter/material.dart';
@@ -34,13 +34,13 @@ void main() {
   test('verificando se os métodos setFields e showAddOrEditTransactionDialog foram chamados corretamente',
       () async {
     // Given
-    when(mockTransactionPage.showAddOrEditTransactionDialog(any, any))
+    when(mockTransactionPage.showAddOrEditDialog(any, any))
         .thenAnswer((_) async {});
 
-    final command = EditTransactionCommand(
+    final command = EditPopUpCommand(
       mockBuildContext,
       mockTransactionPage,
-      testMovementData,
+      testMovementData.id,
     );
 
     // When
@@ -48,7 +48,7 @@ void main() {
 
     // Then
     verify(mockTransactionPage.setFields(testMovementData)).called(1);
-    verify(mockTransactionPage.showAddOrEditTransactionDialog(false, testMovementData)).called(1);
+    verify(mockTransactionPage.showAddOrEditDialog(false, testMovementData.id)).called(1);
     verifyNoMoreInteractions(mockTransactionPage);
   });
 }

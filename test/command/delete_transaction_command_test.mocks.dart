@@ -318,21 +318,18 @@ class MockTransactionPage extends _i1.Mock implements _i4.TransactionPage {
           as _i5.Widget);
 
   @override
-  _i9.Future<void> showAddOrEditTransactionDialog(
-    bool? isToAdd,
-    _i8.MovementData? item,
-  ) =>
+  _i9.Future<void> showAddOrEditDialog(bool? isToAdd, int? id) =>
       (super.noSuchMethod(
-            Invocation.method(#showAddOrEditTransactionDialog, [isToAdd, item]),
+            Invocation.method(#showAddOrEditDialog, [isToAdd, id]),
             returnValue: _i9.Future<void>.value(),
             returnValueForMissingStub: _i9.Future<void>.value(),
           )
           as _i9.Future<void>);
 
   @override
-  _i9.Future<void> showDeleteTransactionDialog(_i8.MovementData? item) =>
+  _i9.Future<void> showDeleteDialog(int? id) =>
       (super.noSuchMethod(
-            Invocation.method(#showDeleteTransactionDialog, [item]),
+            Invocation.method(#showDeleteDialog, [id]),
             returnValue: _i9.Future<void>.value(),
             returnValueForMissingStub: _i9.Future<void>.value(),
           )

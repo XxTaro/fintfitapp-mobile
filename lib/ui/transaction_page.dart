@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:drift/drift.dart' show Value;
+import 'package:fin_fit_app_mobile/command/popup.dart';
 import 'package:fin_fit_app_mobile/helper/category_table_helper.dart';
 import 'package:fin_fit_app_mobile/helper/movement_table_helper.dart';
 import 'package:fin_fit_app_mobile/service/database.dart';
@@ -11,8 +12,8 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter/services.dart';
 
-import '../command/delete_transaction_command.dart';
-import '../command/edit_transaction_command.dart';
+import '../command/delete_popup_command.dart';
+import '../command/edit_popup_command.dart';
 
 class TransactionPageStateful extends StatefulWidget {
   final MovementTableHelper? movementTableHelper;
@@ -30,7 +31,7 @@ class TransactionPageStateful extends StatefulWidget {
   State<TransactionPageStateful> createState() => TransactionPage();
 }
 
-class TransactionPage extends State<TransactionPageStateful> {
+class TransactionPage extends State<TransactionPageStateful> implements PopUp {
   String date = "date";
   int _dateDiff = 0;
   CategoryData? _selectedCategory;
@@ -222,8 +223,8 @@ class TransactionPage extends State<TransactionPageStateful> {
 
   Future<void> _showPopupMenu(Offset globalPosition, MovementData item) async {
     final commands = {
-      editTransaction: EditTransactionCommand(context, this, item),
-      deleteTransaction: DeleteTransactionCommand(context, this, item),
+      editTransaction: EditPopUpCommand(context, this, item.id),
+      deleteTransaction: DeletePopUpCommand(context, this, item.id),
     };
 
     final value = await showMenu(
@@ -242,8 +243,8 @@ class TransactionPage extends State<TransactionPageStateful> {
     }
   }
 
-  void setFields(MovementData item) async {
-    _descriptionController.text = item.description;
+  void setFields(MovementData? item) async {
+    _descriptionController.text = item!.description;
     _valueController.text = item.value.toStringAsFixed(2).replaceAll(r'.', ',');
     _dateController.text = DateFormat('dd/MM/yyyy').format(item.timestamp);
     _selectedGoal = null;
@@ -297,16 +298,18 @@ class TransactionPage extends State<TransactionPageStateful> {
                       _selectedGoal = null;
                       _selectedCategory = null;
                       isEntryOrExit = [true, false];
-                      showAddOrEditTransactionDialog(true, null);
+                      showAddOrEditDialog(true, 0);
                     },
                     icon: const Icon(Icons.add, size: 28)))
           ],
         ));
   }
 
-  Future<void> showAddOrEditTransactionDialog(
-      bool isToAdd, MovementData? item) async {
+  @override
+  Future<void> showAddOrEditDialog(bool isToAdd, int id) async {
+    MovementData? item = await movementTableHelper.getById(id);
     setTransactionDialogText(isToAdd);
+    if (!isToAdd) setFields(item);
     final result = await _addOrEditTransactionDialog(isToAdd, item);
 
     if (result == true && mounted) {
@@ -618,7 +621,10 @@ class TransactionPage extends State<TransactionPageStateful> {
     movementTableHelper.addTransaction(movement);
   }
 
-  Future<void> showDeleteTransactionDialog(MovementData item) async {
+  @override
+  Future<void> showDeleteDialog(int id) async {
+    MovementData? item = await movementTableHelper.getById(id);
+    if (item == null) return;
     final result = await _deleteTransactionDialog(item);
 
     if (result == true && mounted) {

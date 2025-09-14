@@ -1,4 +1,4 @@
-import 'package:fin_fit_app_mobile/command/delete_transaction_command.dart';
+import 'package:fin_fit_app_mobile/command/delete_popup_command.dart';
 import 'package:fin_fit_app_mobile/service/database.dart';
 import 'package:fin_fit_app_mobile/ui/transaction_page.dart';
 import 'package:flutter/material.dart';
@@ -33,19 +33,19 @@ void main() {
 
   test('verificando se o método showDeleteTransactionDialog foi chamado com o item correto', () async {
     // Given
-    when(mockTransactionPage.showDeleteTransactionDialog(any))
+    when(mockTransactionPage.showDeleteDialog(any))
         .thenAnswer((_) async {});
 
-    final command = DeleteTransactionCommand(
+    final command = DeletePopUpCommand(
       mockBuildContext,
       mockTransactionPage,
-      testMovementData,
+      testMovementData.id,
     );
 
     // When
     await command.execute();
 
     // Then
-    verify(mockTransactionPage.showDeleteTransactionDialog(testMovementData)).called(1);
+    verify(mockTransactionPage.showDeleteDialog(testMovementData.id)).called(1);
   });
 }
