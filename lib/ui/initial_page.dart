@@ -3,7 +3,6 @@ import 'package:fin_fit_app_mobile/ui/main_page.dart';
 import 'package:fin_fit_app_mobile/ui/menu_page.dart';
 import 'package:fin_fit_app_mobile/ui/transaction_page.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
 

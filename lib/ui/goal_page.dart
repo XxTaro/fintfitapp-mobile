@@ -6,10 +6,10 @@ import 'package:fin_fit_app_mobile/helper/category_table_helper.dart';
 import 'package:fin_fit_app_mobile/helper/goal_table_helper.dart';
 import 'package:fin_fit_app_mobile/helper/movement_table_helper.dart';
 import 'package:fin_fit_app_mobile/service/database.dart';
+import 'package:fin_fit_app_mobile/ui/goal_detail_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
-import 'package:material_symbols_icons/symbols.dart';
 
 class GoalPageStateful extends StatefulWidget {
   final MovementTableHelper? movementTableHelper;
@@ -39,6 +39,7 @@ class _GoalPageStatefulState extends State<GoalPageStateful> implements PopUp {
   late List<CategoryData> categories;
   late String title;
   late String actionButton;
+  GoalData? _selectedGoal;
 
   late MovementTableHelper movementTableHelper;
   late CategoryTableHelper categoryTableHelper;
@@ -66,6 +67,20 @@ class _GoalPageStatefulState extends State<GoalPageStateful> implements PopUp {
 
   @override
   Widget build(BuildContext context) {
+    return _selectedGoal == null
+        ? buildGoalList()
+        : GoalDetailPage(
+            goal: _selectedGoal!,
+            onBack: () {
+              setState(() {
+                _selectedGoal = null;
+              });
+            },
+            movementTableHelper: movementTableHelper,
+          );
+  }
+
+  Widget buildGoalList() {
     return Scaffold(
       body: SafeArea(
           child: Column(
@@ -131,30 +146,21 @@ class _GoalPageStatefulState extends State<GoalPageStateful> implements PopUp {
 
   List<Widget> _getGoals() {
     return goals.map((item) {
-      // 1. Envolvemos o card de cada item em um FutureBuilder
       return FutureBuilder<double>(
-        // 2. O 'future' que queremos resolver é a chamada para _getProgress
-        //    Note que 'item.value' deve ser o valor ALVO da meta.
-        //    Se o nome da propriedade for outro, ajuste aqui.
-        future: _getProgress(item.id, item.value),
-
-        // 3. O 'builder' decide o que mostrar na tela baseado no estado do future
+        future: _getGoalBalance(item.id),
         builder: (context, snapshot) {
-          // Enquanto os dados não chegam, mostramos um loading
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
-
-          // Se ocorrer um erro
           if (snapshot.hasError) {
             return Text('Erro ao carregar progresso: ${snapshot.error}');
           }
-
-          // Se os dados chegaram com sucesso
           if (snapshot.hasData) {
-            final progress = snapshot.data!; // Obtém o valor do progresso
-
-            // Aqui vai o seu widget original, agora usando o 'progress' calculado
+            final current = snapshot.data!;
+            final progress = snapshot.data! / item.value;
+            final clampedProgress = progress.clamp(0.0, 1.0);
+            final percentText =
+                NumberFormat.percentPattern('pt_BR').format(clampedProgress);
             return Flexible(
               fit: FlexFit.loose,
               child: Container(
@@ -170,30 +176,73 @@ class _GoalPageStatefulState extends State<GoalPageStateful> implements PopUp {
                     child: InkWell(
                       highlightColor: Colors.grey[700],
                       borderRadius: BorderRadius.circular(6),
-                      onTapDown: (details) async =>
-                          await _showPopupMenu(details.globalPosition, item.id),
+                      onTap: () {
+                        setState(() {
+                          _selectedGoal = item;
+                        });
+                      },
+                      //     await _showPopupMenu(details.globalPosition, item.id),
+                      onLongPress: () async {
+                        final RenderBox overlay = Overlay.of(context)
+                            .context
+                            .findRenderObject() as RenderBox;
+                        final Offset position = Offset(
+                            overlay.size.width / 2, overlay.size.height / 2);
+                        await _showPopupMenu(position, item.id);
+                      },
                       child: Padding(
                         padding: const EdgeInsets.all(16),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text('Meta'),
+                            const Text('Meta',
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold, fontSize: 18)),
+                            // const SizedBox(height: 1),
+                            Padding(
+                                padding: const EdgeInsets.only(left: 5),
+                                child: Text(item.description,
+                                    style: const TextStyle(fontSize: 16))),
                             const SizedBox(height: 5),
-                            Text(item.description),
+                            const Text('Valor atual',
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold, fontSize: 18)),
+                            Padding(
+                                padding: const EdgeInsets.only(left: 5),
+                                child: Text('R\$ ${current.toStringAsFixed(2)}',
+                                    style: const TextStyle(fontSize: 16))),
                             const SizedBox(height: 10),
-                            const Text('Valor atual'),
-                            Text(item.value.toString()),
-                            const SizedBox(height: 10),
-                            Text(
-                                '${(progress * 100).toStringAsFixed(2)}% concluído'),
-                            LinearProgressIndicator(
-                              value: progress, // <-- USA O VALOR DO SNAPSHOT
-                              color: Colors.green,
-                              backgroundColor: Colors.grey[400],
+                            Padding(
+                              padding: const EdgeInsets.only(left: 5),
+                              child: Text(
+                                  '${(progress * 100).toStringAsFixed(2)}% concluído',
+                                  style: const TextStyle(fontSize: 16)),
+                            ),
+                            Padding(
+                                padding:
+                                    const EdgeInsets.only(left: 5, right: 5),
+                                child: Semantics(
+                                  label: 'Progresso da meta: $percentText',
+                                  child: LinearProgressIndicator(
+                                    value: clampedProgress,
+                                    color:
+                                        Theme.of(context).colorScheme.primary,
+                                    backgroundColor: Theme.of(context)
+                                        .colorScheme
+                                        .surfaceContainerLowest,
+                                  ),
+                                )),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: [
+                                Text('R\$ ${item.value.toStringAsFixed(2)}',
+                                    style: const TextStyle(fontSize: 14)),
+                              ],
                             ),
                             const SizedBox(height: 10),
                             Text(
-                                'Data final: ${DateFormat('dd/MM/yyyy').format(item.dateEnd)} (${item.dateEnd.difference(DateTime.now()).inDays} dias restantes)'),
+                                'Data final: ${DateFormat('dd/MM/yyyy').format(item.dateEnd)} (${item.dateEnd.difference(DateTime.now()).inDays} dias restantes)',
+                                style: const TextStyle(fontSize: 14)),
                           ],
                         ),
                       ),
@@ -204,21 +253,20 @@ class _GoalPageStatefulState extends State<GoalPageStateful> implements PopUp {
             );
           }
 
-          // Caso padrão (não deve acontecer com future, mas é bom ter)
           return const SizedBox.shrink();
         },
       );
     }).toList();
   }
 
-  Future<double> _getProgress(int goalId, int targetValue) async {
+  Future<double> _getGoalBalance(int goalId) async {
     List<MovementData> movements =
         await movementTableHelper.getByGoalId(goalId);
     double total = 0;
     for (var movement in movements) {
       total += movement.value;
     }
-    return total / targetValue;
+    return total;
   }
 
   Future<void> _showPopupMenu(Offset globalPosition, int id) async {
