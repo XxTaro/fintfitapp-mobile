@@ -3,7 +3,9 @@ import 'dart:io';
 import 'package:drift/drift.dart' show Value;
 import 'package:fin_fit_app_mobile/command/popup.dart';
 import 'package:fin_fit_app_mobile/helper/category_table_helper.dart';
+import 'package:fin_fit_app_mobile/helper/goal_table_helper.dart';
 import 'package:fin_fit_app_mobile/helper/movement_table_helper.dart';
+import 'package:fin_fit_app_mobile/model/goal.dart';
 import 'package:fin_fit_app_mobile/service/database.dart';
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
@@ -18,12 +20,14 @@ import '../command/edit_popup_command.dart';
 class TransactionPageStateful extends StatefulWidget {
   final MovementTableHelper? movementTableHelper;
   final CategoryTableHelper? categoryTableHelper;
+  final GoalTableHelper? goalTableHelper;
   final String? locale;
 
   const TransactionPageStateful({
     super.key,
     this.movementTableHelper,
     this.categoryTableHelper,
+    this.goalTableHelper,
     this.locale,
   });
 
@@ -37,14 +41,16 @@ class TransactionPage extends State<TransactionPageStateful> implements PopUp {
   CategoryData? _selectedCategory;
   CategoryData? _selectedFilterCategory;
   CategoryData? _oldSelectedFilterCategory;
-  String? _selectedGoal;
+  GoalData? _selectedGoal;
 
   static const int editTransaction = 1;
   static const int deleteTransaction = 2;
 
   late MovementTableHelper movementTableHelper;
   late CategoryTableHelper categoryTableHelper;
+  late GoalTableHelper goalTableHelper;
   late List<CategoryData> categories;
+  late List<GoalData> goals;
   late List<Widget> containers = [];
   late List<MovementData> transactions = [];
   late String title;
@@ -63,6 +69,8 @@ class TransactionPage extends State<TransactionPageStateful> implements PopUp {
         MovementTableHelper(DatabaseConnection.instance);
     categoryTableHelper = widget.categoryTableHelper ??
         CategoryTableHelper(DatabaseConnection.instance);
+    goalTableHelper = widget.goalTableHelper ??
+        GoalTableHelper(DatabaseConnection.instance);
     locale = widget.locale ?? Platform.localeName;
     setState(() {
       date = returnMonthAndYear(DateTime(DateTime.now().year,
@@ -71,6 +79,7 @@ class TransactionPage extends State<TransactionPageStateful> implements PopUp {
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       _setCategoriesList();
       _setMovementList();
+      _setGoalList();
     });
   }
 
@@ -135,6 +144,11 @@ class TransactionPage extends State<TransactionPageStateful> implements PopUp {
         DateTime(DateTime.now().year, DateTime.now().month + _dateDiff)));
     transactions = list;
     setState(_fillTransactionContainer);
+  }
+
+  void _setGoalList() async {
+    List<GoalData> list = await Future.value(goalTableHelper.getAllGoals());
+    goals = list;
   }
 
   void _setFilteredMovementList(CategoryData? categoryData) async {
@@ -449,15 +463,15 @@ class TransactionPage extends State<TransactionPageStateful> implements PopUp {
                         menuMaxHeight: 250,
                         value: _selectedGoal,
                         isExpanded: true,
-                        items: [].map((dynamic category) {
-                          return DropdownMenuItem(
-                            value: category,
-                            child: Text(category),
+                        items: goals.map((GoalData goal) {
+                          return DropdownMenuItem<GoalData>(
+                            value: goal,
+                            child: Text(goal.description),
                           );
                         }).toList(),
                         onChanged: (value) {
                           setState(() {
-                            _selectedGoal = value.toString();
+                            _selectedGoal = value;
                           });
                         },
                       ),
@@ -596,6 +610,7 @@ class TransactionPage extends State<TransactionPageStateful> implements PopUp {
       description: _descriptionController.text,
       value: double.parse(_valueController.text.replaceAll(',', '.')),
       categoryId: _selectedCategory!.id,
+      goalId: _selectedGoal != null ? Value(_selectedGoal!.id) : const Value.absent(),
     );
 
     movementTableHelper.updateTransaction(movement);
@@ -616,6 +631,7 @@ class TransactionPage extends State<TransactionPageStateful> implements PopUp {
       description: _descriptionController.text,
       value: double.parse(_valueController.text.replaceAll(',', '.')),
       categoryId: _selectedCategory!.id,
+      goalId: _selectedGoal != null ? Value(_selectedGoal!.id) : const Value.absent(),
     );
 
     movementTableHelper.addTransaction(movement);

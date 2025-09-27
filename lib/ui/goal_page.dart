@@ -77,6 +77,7 @@ class _GoalPageStatefulState extends State<GoalPageStateful> implements PopUp {
               });
             },
             movementTableHelper: movementTableHelper,
+            categoryTableHelper: categoryTableHelper,
           );
   }
 
@@ -136,7 +137,7 @@ class _GoalPageStatefulState extends State<GoalPageStateful> implements PopUp {
   Widget _fillGoalContainer() {
     if (goals.isEmpty) {
       return const Center(
-          child: Text('Não existem transações para o mês e ano selecionado!'));
+          child: Text('Não existem metas cadastradas!'));
     }
 
     return SingleChildScrollView(
@@ -181,7 +182,6 @@ class _GoalPageStatefulState extends State<GoalPageStateful> implements PopUp {
                           _selectedGoal = item;
                         });
                       },
-                      //     await _showPopupMenu(details.globalPosition, item.id),
                       onLongPress: () async {
                         final RenderBox overlay = Overlay.of(context)
                             .context
@@ -198,7 +198,6 @@ class _GoalPageStatefulState extends State<GoalPageStateful> implements PopUp {
                             const Text('Meta',
                                 style: TextStyle(
                                     fontWeight: FontWeight.bold, fontSize: 18)),
-                            // const SizedBox(height: 1),
                             Padding(
                                 padding: const EdgeInsets.only(left: 5),
                                 child: Text(item.description,
