@@ -413,14 +413,18 @@ class GoalData extends DataClass implements Insertable<GoalData> {
   }
 
   @override
+  int get hashCode =>
+      Object.hash(id, description, value, categoryId, dateStart, dateEnd);
+  @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is GoalData &&
-      runtimeType == other.runtimeType &&
-      id == other.id;
-
-  @override
-  int get hashCode => id.hashCode;
+      (other is GoalData &&
+          other.id == this.id &&
+          other.description == this.description &&
+          other.value == this.value &&
+          other.categoryId == this.categoryId &&
+          other.dateStart == this.dateStart &&
+          other.dateEnd == this.dateEnd);
 }
 
 class GoalCompanion extends UpdateCompanion<GoalData> {

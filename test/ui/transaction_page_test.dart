@@ -15,11 +15,13 @@ import 'transaction_page_test.mocks.dart';
 Widget createTransactionPageScreen({
   required MovementTableHelper movementHelper,
   required CategoryTableHelper categoryHelper,
+  required DateTime? fixedDateTime,
 }) {
   return MaterialApp(
     home: TransactionPageStateful(
       movementTableHelper: movementHelper,
       categoryTableHelper: categoryHelper,
+      now: fixedDateTime,
       locale: 'pt_BR',
     ),
   );
@@ -80,7 +82,7 @@ void main() {
       await tester.pumpWidget(createTransactionPageScreen(
         movementHelper: mockMovementHelper,
         categoryHelper: mockCategoryHelper,
-      ));
+        fixedDateTime: DateTime(2025, 7, 15),));
       await tester.pumpAndSettle();
 
       // Then: O título do mês e as transações devem estar visíveis
@@ -100,7 +102,7 @@ void main() {
       await tester.pumpWidget(createTransactionPageScreen(
         movementHelper: mockMovementHelper,
         categoryHelper: mockCategoryHelper,
-      ));
+        fixedDateTime: DateTime(2025, 7, 15),));
       await tester.pumpAndSettle();
 
       // Then
@@ -117,7 +119,7 @@ void main() {
       await tester.pumpWidget(createTransactionPageScreen(
         movementHelper: mockMovementHelper,
         categoryHelper: mockCategoryHelper,
-      ));
+        fixedDateTime: DateTime(2025, 7, 15),));
       await tester.pumpAndSettle();
       expect(find.text('Salário de Julho'), findsOneWidget);
 
@@ -155,7 +157,7 @@ void main() {
       await tester.pumpWidget(createTransactionPageScreen(
         movementHelper: mockMovementHelper,
         categoryHelper: mockCategoryHelper,
-      ));
+        fixedDateTime: DateTime(2025, 7, 15),));
       await tester.pumpAndSettle();
 
       // O helper é configurado para retornar uma lista filtrada quando a busca for acionada
@@ -180,7 +182,7 @@ void main() {
       await tester.pumpWidget(createTransactionPageScreen(
         movementHelper: mockMovementHelper,
         categoryHelper: mockCategoryHelper,
-      ));
+        fixedDateTime: DateTime(2025, 7, 15),));
       await tester.pumpAndSettle();
 
       // When: O usuário clica no botão de adicionar
@@ -227,6 +229,7 @@ void main() {
     await tester.pumpWidget(createTransactionPageScreen(
       movementHelper: mockMovementHelper,
       categoryHelper: mockCategoryHelper,
+      fixedDateTime: DateTime(2025, 7, 15),
     ));
     await tester.pumpAndSettle();
 
@@ -299,6 +302,7 @@ void main() {
     await tester.pumpWidget(createTransactionPageScreen(
       movementHelper: mockMovementHelper,
       categoryHelper: mockCategoryHelper,
+      fixedDateTime: DateTime(2025, 7, 15),
     ));
     await tester.pumpAndSettle();
 
@@ -362,9 +366,12 @@ void main() {
     // Given: A tela está exibindo a lista de transações de Julho
     when(mockMovementHelper.getByMonth(any))
         .thenAnswer((_) async => mockMovementsJuly);
+    when(mockMovementHelper.getById(2))
+        .thenAnswer((_) async => mockMovementsJuly[1]);
     await tester.pumpWidget(createTransactionPageScreen(
       movementHelper: mockMovementHelper,
       categoryHelper: mockCategoryHelper,
+      fixedDateTime: DateTime(2025, 7, 15),
     ));
     await tester.pumpAndSettle();
 
@@ -419,11 +426,14 @@ void main() {
         .thenAnswer((_) async => mockMovementsJuly);
     when(mockCategoryHelper.getById(2))
         .thenAnswer((_) async => mockCategories.last);
+    when(mockMovementHelper.getById(2))
+        .thenAnswer((_) async => mockMovementsJuly[1]);
     when(mockMovementHelper.updateTransaction(any)).thenAnswer((_) async => 1);
 
     await tester.pumpWidget(createTransactionPageScreen(
       movementHelper: mockMovementHelper,
       categoryHelper: mockCategoryHelper,
+      fixedDateTime: DateTime(2025, 7, 15),
     ));
     await tester.pumpAndSettle();
 
@@ -476,6 +486,7 @@ void main() {
     await tester.pumpWidget(createTransactionPageScreen(
       movementHelper: mockMovementHelper,
       categoryHelper: mockCategoryHelper,
+      fixedDateTime: DateTime(2025, 7, 15),
     ));
     await tester.pumpAndSettle();
     expect(find.text('Salário de Julho'), findsOneWidget);

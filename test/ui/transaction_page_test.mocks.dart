@@ -127,11 +127,6 @@ class _Fake$CategoryTable_16 extends _i1.SmartFake
     : super(parent, parentInvocation);
 }
 
-class _FakeCategoryData_17 extends _i1.SmartFake implements _i2.CategoryData {
-  _FakeCategoryData_17(Object parent, Invocation parentInvocation)
-    : super(parent, parentInvocation);
-}
-
 /// A class which mocks [MovementTableHelper].
 ///
 /// See the documentation for Mockito's code generation for more information.
@@ -296,6 +291,16 @@ class MockMovementTableHelper extends _i1.Mock
             returnValue: _i5.Future<int>.value(0),
           )
           as _i5.Future<int>);
+
+  @override
+  _i5.Future<List<_i2.MovementData>> getByGoalId(int? goalId) =>
+      (super.noSuchMethod(
+            Invocation.method(#getByGoalId, [goalId]),
+            returnValue: _i5.Future<List<_i2.MovementData>>.value(
+              <_i2.MovementData>[],
+            ),
+          )
+          as _i5.Future<List<_i2.MovementData>>);
 
   @override
   _i5.Stream<T> createStream<T extends Object>(
@@ -834,14 +839,12 @@ class MockCategoryTableHelper extends _i1.Mock
           as _i5.Future<List<_i2.CategoryData>>);
 
   @override
-  _i5.Future<_i2.CategoryData> getById(int? id) =>
+  _i5.Future<_i2.CategoryData?> getById(int? id) =>
       (super.noSuchMethod(
             Invocation.method(#getById, [id]),
-            returnValue: _i5.Future<_i2.CategoryData>.value(
-              _FakeCategoryData_17(this, Invocation.method(#getById, [id])),
-            ),
+            returnValue: _i5.Future<_i2.CategoryData?>.value(),
           )
-          as _i5.Future<_i2.CategoryData>);
+          as _i5.Future<_i2.CategoryData?>);
 
   @override
   _i5.Future<_i2.CategoryData?> getByName(String? name) =>

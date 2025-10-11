@@ -47,7 +47,6 @@ void main() {
     await command.execute();
 
     // Then
-    verify(mockTransactionPage.setFields(testMovementData)).called(1);
     verify(mockTransactionPage.showAddOrEditDialog(false, testMovementData.id)).called(1);
     verifyNoMoreInteractions(mockTransactionPage);
   });

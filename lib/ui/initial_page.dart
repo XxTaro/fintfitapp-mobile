@@ -19,7 +19,7 @@ class _InitialPageState extends State<InitialPage> {
   int _currentIndex = 0;
   List<Widget> body = [
     const MainPage(key: Key('statefulMainPage')),
-    const TransactionPageStateful(key: Key('statefulTransactionPage')),
+    TransactionPageStateful(key: const Key('statefulTransactionPage')),
     const GoalPageStateful(key: Key('statefulGoalPage')),
     const MenuPageState(key: Key('statefulMenuPage'),),
   ];

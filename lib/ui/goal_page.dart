@@ -11,6 +11,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 
+// Classe auxiliar para agrupar a meta com seu progresso calculado
+class _GoalWithProgress {
+  final GoalData goal;
+  final double currentBalance;
+
+  _GoalWithProgress({required this.goal, required this.currentBalance});
+}
+
 class GoalPageStateful extends StatefulWidget {
   final MovementTableHelper? movementTableHelper;
   final CategoryTableHelper? categoryTableHelper;
@@ -33,18 +41,17 @@ class _GoalPageStatefulState extends State<GoalPageStateful> implements PopUp {
   static const int editGoal = 1;
   static const int deleteGoal = 2;
 
-  CategoryData? _selectedFilterCategory;
-  List<GoalData> goals = [];
-  CategoryData? _selectedCategory;
-  late List<CategoryData> categories;
-  late String title;
-  late String actionButton;
+  // Helpers de banco de dados
+  late final MovementTableHelper movementTableHelper;
+  late final CategoryTableHelper categoryTableHelper;
+  late final GoalTableHelper goalTableHelper;
+
+  // Estado da UI
+  List<_GoalWithProgress> _goalsWithProgress = [];
+  bool _isLoading = true;
   GoalData? _selectedGoal;
 
-  late MovementTableHelper movementTableHelper;
-  late CategoryTableHelper categoryTableHelper;
-  late GoalTableHelper goalTableHelper;
-
+  // Controladores para diálogos
   final TextEditingController _dateController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
   final TextEditingController _valueController = TextEditingController();
@@ -52,220 +59,227 @@ class _GoalPageStatefulState extends State<GoalPageStateful> implements PopUp {
   @override
   void initState() {
     super.initState();
-    movementTableHelper = widget.movementTableHelper ??
-        MovementTableHelper(DatabaseConnection.instance);
-    categoryTableHelper = widget.categoryTableHelper ??
-        CategoryTableHelper(DatabaseConnection.instance);
-    goalTableHelper =
-        widget.goalTableHelper ?? GoalTableHelper(DatabaseConnection.instance);
+    movementTableHelper = widget.movementTableHelper ?? MovementTableHelper(DatabaseConnection.instance);
+    categoryTableHelper = widget.categoryTableHelper ?? CategoryTableHelper(DatabaseConnection.instance);
+    goalTableHelper = widget.goalTableHelper ?? GoalTableHelper(DatabaseConnection.instance);
 
-    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-      _setCategoriesList();
-      _setGoalList();
-    });
+    _refreshGoals();
+  }
+
+  @override
+  void dispose() {
+    _dateController.dispose();
+    _descriptionController.dispose();
+    _valueController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _refreshGoals() async {
+    if (!mounted) return;
+    setState(() => _isLoading = true);
+
+    final goals = await goalTableHelper.getAllGoals();
+    final goalsWithProgress = <_GoalWithProgress>[];
+
+    for (final goal in goals) {
+      final balance = await _getGoalBalance(goal.id);
+      goalsWithProgress.add(_GoalWithProgress(goal: goal, currentBalance: balance));
+    }
+
+    if (mounted) {
+      setState(() {
+        _goalsWithProgress = goalsWithProgress;
+        _isLoading = false;
+      });
+    }
+  }
+
+  Future<double> _getGoalBalance(int goalId) async {
+    final movements = await movementTableHelper.getByGoalId(goalId);
+    return movements.fold<double>(0.0, (sum, item) => sum + item.value);
+  }
+
+  void _navigateToDetail(GoalData goal) {
+    setState(() => _selectedGoal = goal);
+  }
+
+  void _navigateBackToList() {
+    setState(() => _selectedGoal = null);
+    _refreshGoals();
   }
 
   @override
   Widget build(BuildContext context) {
-    return _selectedGoal == null
-        ? buildGoalList()
-        : GoalDetailPage(
-            goal: _selectedGoal!,
-            onBack: () {
-              setState(() {
-                _selectedGoal = null;
-              });
-            },
-            movementTableHelper: movementTableHelper,
-            categoryTableHelper: categoryTableHelper,
-          );
+    if (_selectedGoal != null) {
+      return GoalDetailPage(
+        goal: _selectedGoal!,
+        onBack: _navigateBackToList,
+        movementTableHelper: movementTableHelper,
+        categoryTableHelper: categoryTableHelper,
+        goalTableHelper: goalTableHelper,
+      );
+    }
+    return _buildGoalList();
   }
 
-  Widget buildGoalList() {
+  Widget _buildGoalList() {
     return Scaffold(
       body: SafeArea(
-          child: Column(
-        children: [
-          _buildHeader(),
-          Expanded(
-            child: Padding(
-                padding: const EdgeInsets.all(10), child: _fillGoalContainer()),
-          )
-        ],
-      )),
-    );
-  }
-
-  void _setCategoriesList() async {
-    List<CategoryData> list =
-        await Future.value(categoryTableHelper.getAllCategories());
-    categories = list;
-  }
-
-  Widget _buildHeader() {
-    return Padding(
-        padding: const EdgeInsets.only(left: 20, right: 20, top: 20),
-        child: Stack(
-          alignment: Alignment.center,
+        child: Column(
           children: [
-            const Center(child: Text('Metas', style: TextStyle(fontSize: 28))),
-            Positioned(
-                left: 0,
-                child: IconButton(
-                  onPressed: _showFilterGoalDialog,
-                  icon: (_selectedFilterCategory == null)
-                      ? const Icon(Icons.filter_alt_off, size: 28)
-                      : const Icon(Icons.filter_alt_rounded, size: 28),
-                )),
-            Positioned(
-                right: 0,
-                child: IconButton(
-                    onPressed: () {
-                      _descriptionController.clear();
-                      _valueController.clear();
-                      _dateController.clear();
-                      _selectedCategory = null;
-                      showAddOrEditDialog(true, 0);
-                    },
-                    icon: const Icon(Icons.add, size: 28)))
+            _GoalListHeader(
+              onAddPressed: () => showAddOrEditDialog(true, 0),
+              onFilterPressed: () { /* Lógica de filtro aqui */ },
+            ),
+            Expanded(
+              child: _isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : _GoalListView(
+                      goalsWithProgress: _goalsWithProgress,
+                      onGoalTap: _navigateToDetail,
+                      onGoalLongPress: (position, goalId) => _showPopupMenu(position, goalId),
+                    ),
+            ),
           ],
-        ));
-  }
-
-  Future<void> _showFilterGoalDialog() async {}
-
-  Widget _fillGoalContainer() {
-    if (goals.isEmpty) {
-      return const Center(
-          child: Text('Não existem metas cadastradas!'));
-    }
-
-    return SingleChildScrollView(
-      child: Column(mainAxisSize: MainAxisSize.min, children: _getGoals()),
+        ),
+      ),
     );
   }
 
-  List<Widget> _getGoals() {
-    return goals.map((item) {
-      return FutureBuilder<double>(
-        future: _getGoalBalance(item.id),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          if (snapshot.hasError) {
-            return Text('Erro ao carregar progresso: ${snapshot.error}');
-          }
-          if (snapshot.hasData) {
-            final current = snapshot.data!;
-            final progress = snapshot.data! / item.value;
-            final clampedProgress = progress.clamp(0.0, 1.0);
-            final percentText =
-                NumberFormat.percentPattern('pt_BR').format(clampedProgress);
-            return Flexible(
-              fit: FlexFit.loose,
-              child: Container(
-                margin:
-                    const EdgeInsets.only(top: 2, bottom: 8, left: 2, right: 2),
-                child: Material(
-                  child: Ink(
-                    width: 500,
-                    decoration: BoxDecoration(
-                      color: Colors.grey[300],
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                    child: InkWell(
-                      highlightColor: Colors.grey[700],
-                      borderRadius: BorderRadius.circular(6),
-                      onTap: () {
-                        setState(() {
-                          _selectedGoal = item;
-                        });
-                      },
-                      onLongPress: () async {
-                        final RenderBox overlay = Overlay.of(context)
-                            .context
-                            .findRenderObject() as RenderBox;
-                        final Offset position = Offset(
-                            overlay.size.width / 2, overlay.size.height / 2);
-                        await _showPopupMenu(position, item.id);
-                      },
-                      child: Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text('Meta',
-                                style: TextStyle(
-                                    fontWeight: FontWeight.bold, fontSize: 18)),
-                            Padding(
-                                padding: const EdgeInsets.only(left: 5),
-                                child: Text(item.description,
-                                    style: const TextStyle(fontSize: 16))),
-                            const SizedBox(height: 5),
-                            const Text('Valor atual',
-                                style: TextStyle(
-                                    fontWeight: FontWeight.bold, fontSize: 18)),
-                            Padding(
-                                padding: const EdgeInsets.only(left: 5),
-                                child: Text('R\$ ${current.toStringAsFixed(2)}',
-                                    style: const TextStyle(fontSize: 16))),
-                            const SizedBox(height: 10),
-                            Padding(
-                              padding: const EdgeInsets.only(left: 5),
-                              child: Text(
-                                  '${(progress * 100).toStringAsFixed(2)}% concluído',
-                                  style: const TextStyle(fontSize: 16)),
-                            ),
-                            Padding(
-                                padding:
-                                    const EdgeInsets.only(left: 5, right: 5),
-                                child: Semantics(
-                                  label: 'Progresso da meta: $percentText',
-                                  child: LinearProgressIndicator(
-                                    value: clampedProgress,
-                                    color:
-                                        Theme.of(context).colorScheme.primary,
-                                    backgroundColor: Theme.of(context)
-                                        .colorScheme
-                                        .surfaceContainerLowest,
-                                  ),
-                                )),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: [
-                                Text('R\$ ${item.value.toStringAsFixed(2)}',
-                                    style: const TextStyle(fontSize: 14)),
-                              ],
-                            ),
-                            const SizedBox(height: 10),
-                            Text(
-                                'Data final: ${DateFormat('dd/MM/yyyy').format(item.dateEnd)} (${item.dateEnd.difference(DateTime.now()).inDays} dias restantes)',
-                                style: const TextStyle(fontSize: 14)),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            );
-          }
+  @override
+  Future<void> showAddOrEditDialog(bool isToAdd, int id) async {
+    String dialogTitle = isToAdd ? "Adicionar Meta" : "Editar Meta";
+    String actionButtonText = isToAdd ? "Adicionar" : "Editar";
+    GoalData? goal = isToAdd ? null : await goalTableHelper.getById(id);
 
-          return const SizedBox.shrink();
-        },
-      );
-    }).toList();
+    if (goal != null) {
+      _descriptionController.text = goal.description;
+      _valueController.text = goal.value.toString();
+      _dateController.text = DateFormat('dd/MM/yyyy').format(goal.dateEnd);
+    } else {
+      _descriptionController.clear();
+      _valueController.clear();
+      _dateController.clear();
+    }
+
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (_) => _buildAddOrEditDialog(dialogTitle, actionButtonText, isToAdd, goal),
+    );
+
+    if (result == true) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text("Meta salva!"),
+        backgroundColor: Colors.green,
+      ));
+      await _refreshGoals();
+    }
   }
 
-  Future<double> _getGoalBalance(int goalId) async {
-    List<MovementData> movements =
-        await movementTableHelper.getByGoalId(goalId);
-    double total = 0;
-    for (var movement in movements) {
-      total += movement.value;
+  @override
+  Future<void> showDeleteDialog(int id) async {
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Deletar meta'),
+        content: const Text('Você deseja realmente deletar essa meta?\n\nEssa ação não poderá ser desfeita.'),
+        actions: [
+          TextButton(onPressed: () => Navigator.of(context).pop(false), child: const Text('Não')),
+          TextButton(
+            onPressed: () {
+              goalTableHelper.deleteGoal(id);
+              Navigator.of(context).pop(true);
+            },
+            child: const Text('Sim'),
+          ),
+        ],
+      ),
+    );
+
+    if (result == true) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text("Meta deletada!"),
+        backgroundColor: Colors.red,
+      ));
+      await _refreshGoals();
     }
-    return total;
+  }
+  
+  AlertDialog _buildAddOrEditDialog(String title, String actionButton, bool isToAdd, GoalData? item) {
+    return AlertDialog(
+      title: Text(title),
+      content: SingleChildScrollView(
+        child: ListBody(
+          children: <Widget>[
+            TextField(
+              controller: _descriptionController,
+              decoration: const InputDecoration(labelText: 'Descrição', prefixIcon: Icon(Icons.description)),
+            ),
+            const SizedBox(height: 20),
+            TextField(
+              controller: _valueController,
+              decoration: const InputDecoration(labelText: 'Valor alvo', prefixIcon: Icon(Icons.attach_money)),
+              keyboardType: TextInputType.number,
+              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            ),
+            const SizedBox(height: 20),
+            TextField(
+              onTap: _selectDate,
+              readOnly: true,
+              controller: _dateController,
+              decoration: const InputDecoration(labelText: 'Data Final', prefixIcon: Icon(Icons.calendar_today)),
+            ),
+          ],
+        ),
+      ),
+      actions: <Widget>[
+        TextButton(onPressed: () => Navigator.of(context).pop(false), child: const Text('Cancelar')),
+        TextButton(
+          child: Text(actionButton),
+          onPressed: () {
+            _handleSaveGoal(isToAdd, item);
+            Navigator.of(context).pop(true);
+          },
+        ),
+      ],
+    );
+  }
+
+  void _handleSaveGoal(bool isToAdd, GoalData? item) {
+    if (_descriptionController.text.isEmpty || _valueController.text.isEmpty || _dateController.text.isEmpty) {
+      return;
+    }
+
+    final companion = GoalCompanion(
+      description: Value(_descriptionController.text),
+      value: Value(int.parse(_valueController.text)),
+      dateEnd: Value(DateFormat('dd/MM/yyyy').parse(_dateController.text)),
+      dateStart: isToAdd ? Value(DateTime.now()) : const Value.absent(),
+      categoryId: isToAdd ? const Value(0) : const Value.absent(), // Assumindo 0 como default
+    );
+
+    if (isToAdd) {
+      goalTableHelper.addGoal(companion);
+    } else if (item != null) {
+      goalTableHelper.updateGoal(companion.copyWith(id: Value(item.id)));
+    }
+  }
+
+  Future<void> _selectDate() async {
+    final initialDate = _dateController.text.isNotEmpty
+        ? DateFormat("dd/MM/yyyy").parse(_dateController.text)
+        : DateTime.now();
+
+    DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: initialDate,
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2100),
+    );
+
+    if (picked != null) {
+      _dateController.text = DateFormat('dd/MM/yyyy').format(picked);
+    }
   }
 
   Future<void> _showPopupMenu(Offset globalPosition, int id) async {
@@ -274,261 +288,146 @@ class _GoalPageStatefulState extends State<GoalPageStateful> implements PopUp {
       deleteGoal: DeletePopUpCommand(context, this, id),
     };
 
-    final value = await showMenu(
+    final value = await showMenu<int>(
       context: context,
-      position: RelativeRect.fromLTRB(globalPosition.dx, globalPosition.dy,
-          globalPosition.dx, globalPosition.dy),
+      position: RelativeRect.fromRect(globalPosition & const Size(40, 40), Offset.zero & (Overlay.of(context).context.findRenderObject() as RenderBox).size),
       items: const [
         PopupMenuItem(value: editGoal, child: Text("Editar")),
         PopupMenuItem(value: deleteGoal, child: Text("Deletar")),
       ],
-      elevation: 8.0,
     );
 
     if (value != null) {
       await commands[value]?.execute();
     }
   }
+}
+
+class _GoalListHeader extends StatelessWidget {
+  final VoidCallback onAddPressed;
+  final VoidCallback onFilterPressed;
+  
+  const _GoalListHeader({required this.onAddPressed, required this.onFilterPressed});
 
   @override
-  Future<void> showAddOrEditDialog(bool isToAdd, int id) async {
-    GoalData? item = await goalTableHelper.getById(id);
-    setGoalDialogText(isToAdd);
-    if (!isToAdd) setFields(item);
-    final result = await _addOrEditGoalDialog(isToAdd, item);
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(20),
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          const Text('Metas', style: TextStyle(fontSize: 28)),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: IconButton(
+              onPressed: onFilterPressed,
+              icon: const Icon(Icons.filter_alt_off, size: 28),
+            ),
+          ),
+          Align(
+            alignment: Alignment.centerRight,
+            child: IconButton(
+              onPressed: onAddPressed,
+              icon: const Icon(Icons.add, size: 28),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
 
-    if (result == true && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        content: Text("Meta salva!"),
-        backgroundColor: Colors.green,
-      ));
-      _setGoalList();
+class _GoalListView extends StatelessWidget {
+  final List<_GoalWithProgress> goalsWithProgress;
+  final Function(GoalData) onGoalTap;
+  final Function(Offset, int) onGoalLongPress;
+
+  const _GoalListView({
+    required this.goalsWithProgress,
+    required this.onGoalTap,
+    required this.onGoalLongPress,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (goalsWithProgress.isEmpty) {
+      return const Center(child: Text('Não existem metas cadastradas!'));
     }
-  }
-
-  void _setGoalList() async {
-    List<GoalData> list = await Future.value(goalTableHelper.getAllGoals());
-    goals = list;
-    setState(_fillGoalContainer);
-  }
-
-  Future<bool?> _addOrEditGoalDialog(bool isToAdd, GoalData? item) async {
-    return showDialog<bool?>(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return StatefulBuilder(
-          builder: (BuildContext context, StateSetter setState) {
-            return AlertDialog(
-              shape: const RoundedRectangleBorder(
-                borderRadius: BorderRadius.all(Radius.circular(5)),
-              ),
-              backgroundColor: Colors.white,
-              insetPadding: EdgeInsets.zero,
-              contentPadding: const EdgeInsets.only(
-                  left: 24, right: 24, top: 24, bottom: 24),
-              clipBehavior: Clip.antiAliasWithSaveLayer,
-              title: Text(title),
-              content: SizedBox(
-                width: MediaQuery.of(context).size.width * 0.8,
-                child: SingleChildScrollView(
-                  padding: EdgeInsets.zero,
-                  child: ListBody(
-                    children: <Widget>[
-                      TextField(
-                        controller: _descriptionController,
-                        decoration: const InputDecoration(
-                          filled: true,
-                          prefixIcon: Icon(Icons.description),
-                          contentPadding: EdgeInsets.all(0),
-                          border: UnderlineInputBorder(),
-                          labelText: 'Descrição',
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-                      TextField(
-                        controller: _valueController,
-                        decoration: const InputDecoration(
-                          filled: true,
-                          prefixIcon: Icon(Icons.attach_money),
-                          contentPadding: EdgeInsets.all(0),
-                          border: UnderlineInputBorder(),
-                          labelText: 'Valor alvo',
-                          hintText: '1000',
-                        ),
-                        inputFormatters: [
-                          FilteringTextInputFormatter.allow(RegExp(r'^\d+')),
-                        ],
-                        keyboardType: TextInputType.number,
-                      ),
-                      const SizedBox(height: 20),
-                      TextField(
-                        onTap: _selectDate,
-                        readOnly: true,
-                        controller: _dateController,
-                        decoration: const InputDecoration(
-                          filled: true,
-                          prefixIcon: Icon(Icons.calendar_today),
-                          contentPadding: EdgeInsets.all(0),
-                          border: UnderlineInputBorder(),
-                          labelText: 'Data',
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              actions: <Widget>[
-                TextButton(
-                  child: const Text('Cancelar'),
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                ),
-                TextButton(
-                  child: Text(actionButton),
-                  onPressed: () {
-                    if (isToAdd) {
-                      _addGoal();
-                    } else {
-                      _editGoal(item);
-                    }
-                    Navigator.of(context).pop(true);
-                  },
-                ),
-              ],
-            );
-          },
+    return ListView.builder(
+      padding: const EdgeInsets.symmetric(horizontal: 10),
+      itemCount: goalsWithProgress.length,
+      itemBuilder: (context, index) {
+        final item = goalsWithProgress[index];
+        return _GoalListItem(
+          goalWithProgress: item,
+          onTap: () => onGoalTap(item.goal),
+          onLongPress: (details) => onGoalLongPress(details.globalPosition, item.goal.id),
         );
       },
     );
   }
+}
 
-  void _editGoal(GoalData? item) {
-    if (_dateController.text.isEmpty ||
-        _selectedCategory == null ||
-        _descriptionController.text.isEmpty ||
-        _valueController.text.isEmpty) {
-      return;
-    }
+class _GoalListItem extends StatelessWidget {
+  final _GoalWithProgress goalWithProgress;
+  final VoidCallback onTap;
+  final GestureLongPressStartCallback? onLongPress;
 
-    GoalCompanion goal = GoalCompanion.insert(
-      id: Value(item!.id),
-      dateStart: DateTime.now(),
-      dateEnd: DateFormat('dd/MM/yyyy').parse(_dateController.text),
-      description: _descriptionController.text,
-      value: int.parse(_valueController.text),
-      categoryId: _selectedCategory!.id,
-    );
-
-    goalTableHelper.updateGoal(goal);
-  }
-
-  Future<void> _addGoal() async {
-    if (_dateController.text.isEmpty ||
-        _descriptionController.text.isEmpty ||
-        _valueController.text.isEmpty) {
-      return;
-    }
-
-    GoalCompanion goal = GoalCompanion.insert(
-      description: _descriptionController.text,
-      dateStart: DateTime.now(),
-      dateEnd: DateFormat('dd/MM/yyyy').parse(_dateController.text),
-      value: int.parse(_valueController.text),
-      categoryId: 0,
-    );
-
-    await goalTableHelper.addGoal(goal);
-  }
-
-  Future<void> _selectDate() async {
-    DateTime currentDate;
-    if (_dateController.text.isEmpty) {
-      currentDate = DateTime.now();
-    } else {
-      currentDate = DateFormat("dd/MM/yyyy").parse(_dateController.text);
-    }
-    DateTime? picked = await showDatePicker(
-        context: context,
-        initialDate: currentDate,
-        firstDate: DateTime(2000),
-        lastDate: DateTime(2100));
-
-    if (picked != null) {
-      setState(() {
-        _dateController.text = DateFormat('dd/MM/yyyy').format(picked);
-      });
-    }
-  }
-
-  void setFields(GoalData? item) async {
-    _descriptionController.text = item!.description;
-    _valueController.text = item.value.toString();
-    _dateController.text = DateFormat('dd/MM/yyyy').format(item.dateEnd);
-    _selectedCategory = await categoryTableHelper.getById(item.categoryId);
-  }
-
-  void setGoalDialogText(bool isToAdd) {
-    if (isToAdd) {
-      title = "Adicionar meta";
-      actionButton = "Adicionar";
-      return;
-    }
-    title = "Editar meta";
-    actionButton = "Editar";
-  }
+  const _GoalListItem({
+    required this.goalWithProgress,
+    required this.onTap,
+    this.onLongPress,
+  });
 
   @override
-  Future<void> showDeleteDialog(int id) async {
-    GoalData? item = await goalTableHelper.getById(id);
-    if (item == null) return;
-    final result = await _deleteGoalDialog(item);
+  Widget build(BuildContext context) {
+    final goal = goalWithProgress.goal;
+    final currentBalance = goalWithProgress.currentBalance;
+    final progress = (goal.value > 0) ? (currentBalance / goal.value) : 0.0;
+    final clampedProgress = progress.clamp(0.0, 1.0);
+    final currencyFormat = NumberFormat.currency(locale: 'pt_BR', symbol: 'R\$');
+    final remainingDays = goal.dateEnd.difference(DateTime.now()).inDays;
 
-    if (result == true && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        content: Text("Meta deletada!"),
-        backgroundColor: Colors.red,
-      ));
-      _setGoalList();
-    }
-  }
-
-  Future<bool?> _deleteGoalDialog(GoalData item) async {
-    return showDialog<bool?>(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return StatefulBuilder(
-          builder: (BuildContext context, StateSetter setState) {
-            return AlertDialog(
-              shape: const RoundedRectangleBorder(
-                borderRadius: BorderRadius.all(Radius.circular(5)),
+    return Card(
+      margin: const EdgeInsets.symmetric(vertical: 6.0),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
+        onLongPress: onLongPress != null
+            ? () => onLongPress!(const LongPressStartDetails(globalPosition: Offset.zero))
+            : null,
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(goal.description, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+              const SizedBox(height: 12),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text('Saldo: ${currencyFormat.format(currentBalance)}'),
+                  Text('Meta: ${currencyFormat.format(goal.value)}'),
+                ],
               ),
-              backgroundColor: Colors.white,
-              insetPadding: EdgeInsets.zero,
-              title: const Text('Deletar meta'),
-              content: const Text(
-                  'Você deseja realmente deletar essa meta?\n\nEssa ação não poderá ser desfeita.'),
-              actions: <Widget>[
-                TextButton(
-                  child: const Text('Não'),
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                ),
-                TextButton(
-                  child: const Text('Sim'),
-                  onPressed: () {
-                    goalTableHelper.deleteGoal(item.id);
-                    Navigator.of(context).pop(true);
-                  },
-                ),
-              ],
-            );
-          },
-        );
-      },
+              const SizedBox(height: 8),
+              LinearProgressIndicator(
+                value: clampedProgress,
+                minHeight: 6,
+                borderRadius: BorderRadius.circular(3),
+              ),
+              const SizedBox(height: 8),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                   Text('${(progress * 100).toStringAsFixed(1)}% alcançado', style: const TextStyle(fontSize: 14)),
+                   Text('$remainingDays dias restantes', style: const TextStyle(fontSize: 14)),
+                ],
+              )
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

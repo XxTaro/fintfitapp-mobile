@@ -29,8 +29,8 @@ void main() {
       final foundCategory = await categoryHelper.getById(generatedId);
 
       // Then
-      test.expect(foundCategory.id, generatedId);
-      test.expect(foundCategory.name, 'Alimentação');
+      test.expect(foundCategory?.id, generatedId);
+      test.expect(foundCategory?.name, 'Alimentação');
     });
 
     test.test('deve retornar todas as categorias cadastradas', () async {
@@ -77,8 +77,8 @@ void main() {
       final fetchedCategory = await categoryHelper.getById(id);
 
       // Then
-      test.expect(fetchedCategory.name, 'Habitação');
-      test.expect(fetchedCategory.id, id);
+      test.expect(fetchedCategory?.name, 'Habitação');
+      test.expect(fetchedCategory?.id, id);
     });
     
     test.test('deve deletar uma categoria pelo id', () async {
@@ -89,9 +89,10 @@ void main() {
       await categoryHelper.deleteCategory(id);
       
       // Then
+      CategoryData? deletedCategory = await categoryHelper.getById(id);
       test.expect(
-        () => categoryHelper.getById(id),
-        test.throwsA(test.isA<StateError>()),
+        deletedCategory,
+        null,
       );
     });
   });

@@ -5,7 +5,6 @@ import 'package:fin_fit_app_mobile/command/popup.dart';
 import 'package:fin_fit_app_mobile/helper/category_table_helper.dart';
 import 'package:fin_fit_app_mobile/helper/goal_table_helper.dart';
 import 'package:fin_fit_app_mobile/helper/movement_table_helper.dart';
-import 'package:fin_fit_app_mobile/model/goal.dart';
 import 'package:fin_fit_app_mobile/service/database.dart';
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
@@ -22,14 +21,16 @@ class TransactionPageStateful extends StatefulWidget {
   final CategoryTableHelper? categoryTableHelper;
   final GoalTableHelper? goalTableHelper;
   final String? locale;
+  final DateTime now;
 
-  const TransactionPageStateful({
+  TransactionPageStateful({
     super.key,
     this.movementTableHelper,
     this.categoryTableHelper,
     this.goalTableHelper,
     this.locale,
-  });
+    DateTime? now,
+  }) : now = now ?? DateTime.now();
 
   @override
   State<TransactionPageStateful> createState() => TransactionPage();
@@ -50,12 +51,13 @@ class TransactionPage extends State<TransactionPageStateful> implements PopUp {
   late CategoryTableHelper categoryTableHelper;
   late GoalTableHelper goalTableHelper;
   late List<CategoryData> categories;
-  late List<GoalData> goals;
+  late List<GoalData> goals = [];
   late List<Widget> containers = [];
   late List<MovementData> transactions = [];
   late String title;
   late String actionButton;
   late String locale;
+  late DateTime dateTime = widget.now;
 
   final TextEditingController _dateController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
@@ -73,8 +75,8 @@ class TransactionPage extends State<TransactionPageStateful> implements PopUp {
         GoalTableHelper(DatabaseConnection.instance);
     locale = widget.locale ?? Platform.localeName;
     setState(() {
-      date = returnMonthAndYear(DateTime(DateTime.now().year,
-          DateTime.now().month - _dateDiff, DateTime.now().day));
+      date = returnMonthAndYear(DateTime(dateTime.year,
+          dateTime.month - _dateDiff, dateTime.day));
     });
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       _setCategoriesList();
@@ -125,8 +127,8 @@ class TransactionPage extends State<TransactionPageStateful> implements PopUp {
         await movementTableHelper.getByContainsNameAndDate(
       value,
       DateTime(
-        DateTime.now().year,
-        DateTime.now().month + _dateDiff,
+        dateTime.year,
+        dateTime.month + _dateDiff,
       ),
     );
     transactions = list;
@@ -141,7 +143,7 @@ class TransactionPage extends State<TransactionPageStateful> implements PopUp {
 
   void _setMovementList() async {
     List<MovementData> list = await Future.value(movementTableHelper.getByMonth(
-        DateTime(DateTime.now().year, DateTime.now().month + _dateDiff)));
+        DateTime(dateTime.year, dateTime.month + _dateDiff)));
     transactions = list;
     setState(_fillTransactionContainer);
   }
@@ -154,7 +156,7 @@ class TransactionPage extends State<TransactionPageStateful> implements PopUp {
   void _setFilteredMovementList(CategoryData? categoryData) async {
     List<MovementData> list = await Future.value(
         movementTableHelper.getByMonthAndCategory(
-            DateTime(DateTime.now().year, DateTime.now().month + _dateDiff),
+            DateTime(dateTime.year, dateTime.month + _dateDiff),
             categoryData));
     transactions = list;
     setState(_fillTransactionContainer);
@@ -308,7 +310,7 @@ class TransactionPage extends State<TransactionPageStateful> implements PopUp {
                       _valueController.clear();
                       _dateController.clear();
                       _dateController.text =
-                          DateFormat('dd/MM/yyyy').format(DateTime.now());
+                          DateFormat('dd/MM/yyyy').format(dateTime);
                       _selectedGoal = null;
                       _selectedCategory = null;
                       isEntryOrExit = [true, false];
@@ -321,7 +323,7 @@ class TransactionPage extends State<TransactionPageStateful> implements PopUp {
 
   @override
   Future<void> showAddOrEditDialog(bool isToAdd, int id) async {
-    MovementData? item = await movementTableHelper.getById(id);
+    MovementData? item = id == 0 ? null : await movementTableHelper.getById(id);
     setTransactionDialogText(isToAdd);
     if (!isToAdd) setFields(item);
     final result = await _addOrEditTransactionDialog(isToAdd, item);
@@ -605,7 +607,7 @@ class TransactionPage extends State<TransactionPageStateful> implements PopUp {
       id: Value(item!.id),
       timestamp: DateFormat('dd/MM/yyyy').parse(_dateController.text),
       createdAt: item.createdAt,
-      updatedAt: DateTime.now(),
+      updatedAt: dateTime,
       isIncome: isEntryOrExit[0],
       description: _descriptionController.text,
       value: double.parse(_valueController.text.replaceAll(',', '.')),
@@ -625,8 +627,8 @@ class TransactionPage extends State<TransactionPageStateful> implements PopUp {
     }
     MovementCompanion movement = MovementCompanion.insert(
       timestamp: DateFormat('dd/MM/yyyy').parse(_dateController.text),
-      createdAt: DateTime.now(),
-      updatedAt: DateTime.now(),
+      createdAt: dateTime,
+      updatedAt: dateTime,
       isIncome: isEntryOrExit[0],
       description: _descriptionController.text,
       value: double.parse(_valueController.text.replaceAll(',', '.')),
@@ -722,9 +724,9 @@ class TransactionPage extends State<TransactionPageStateful> implements PopUp {
                       setState(() {
                         _dateDiff--;
                         date = returnMonthAndYear(DateTime(
-                            DateTime.now().year,
-                            DateTime.now().month + _dateDiff,
-                            DateTime.now().day));
+                            dateTime.year,
+                            dateTime.month + _dateDiff,
+                            dateTime.day));
                         _setMovementList();
                       });
                     },
@@ -740,9 +742,9 @@ class TransactionPage extends State<TransactionPageStateful> implements PopUp {
                         setState(() {
                           _dateDiff++;
                           date = returnMonthAndYear(DateTime(
-                              DateTime.now().year,
-                              DateTime.now().month + _dateDiff,
-                              DateTime.now().day));
+                              dateTime.year,
+                              dateTime.month + _dateDiff,
+                              dateTime.day));
                           _setMovementList();
                         });
                       },

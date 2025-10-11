@@ -66,62 +66,57 @@ class _Fake$CategoryTable_6 extends _i1.SmartFake
     : super(parent, parentInvocation);
 }
 
-class _FakeCategoryData_7 extends _i1.SmartFake implements _i2.CategoryData {
-  _FakeCategoryData_7(Object parent, Invocation parentInvocation)
+class _FakeFuture_7<T1> extends _i1.SmartFake implements _i5.Future<T1> {
+  _FakeFuture_7(Object parent, Invocation parentInvocation)
     : super(parent, parentInvocation);
 }
 
-class _FakeFuture_8<T1> extends _i1.SmartFake implements _i5.Future<T1> {
-  _FakeFuture_8(Object parent, Invocation parentInvocation)
-    : super(parent, parentInvocation);
-}
-
-class _FakeInsertStatement_9<T1 extends _i3.Table, D1> extends _i1.SmartFake
+class _FakeInsertStatement_8<T1 extends _i3.Table, D1> extends _i1.SmartFake
     implements _i3.InsertStatement<T1, D1> {
-  _FakeInsertStatement_9(Object parent, Invocation parentInvocation)
+  _FakeInsertStatement_8(Object parent, Invocation parentInvocation)
     : super(parent, parentInvocation);
 }
 
-class _FakeUpdateStatement_10<T extends _i3.Table, D> extends _i1.SmartFake
+class _FakeUpdateStatement_9<T extends _i3.Table, D> extends _i1.SmartFake
     implements _i3.UpdateStatement<T, D> {
-  _FakeUpdateStatement_10(Object parent, Invocation parentInvocation)
+  _FakeUpdateStatement_9(Object parent, Invocation parentInvocation)
     : super(parent, parentInvocation);
 }
 
-class _FakeSimpleSelectStatement_11<T1 extends _i3.HasResultSet, D>
+class _FakeSimpleSelectStatement_10<T1 extends _i3.HasResultSet, D>
     extends _i1.SmartFake
     implements _i3.SimpleSelectStatement<T1, D> {
-  _FakeSimpleSelectStatement_11(Object parent, Invocation parentInvocation)
+  _FakeSimpleSelectStatement_10(Object parent, Invocation parentInvocation)
     : super(parent, parentInvocation);
 }
 
-class _FakeJoinedSelectStatement_12<FirstT extends _i3.HasResultSet, FirstD>
+class _FakeJoinedSelectStatement_11<FirstT extends _i3.HasResultSet, FirstD>
     extends _i1.SmartFake
     implements _i3.JoinedSelectStatement<FirstT, FirstD> {
-  _FakeJoinedSelectStatement_12(Object parent, Invocation parentInvocation)
+  _FakeJoinedSelectStatement_11(Object parent, Invocation parentInvocation)
     : super(parent, parentInvocation);
 }
 
-class _FakeBaseSelectStatement_13<Row> extends _i1.SmartFake
+class _FakeBaseSelectStatement_12<Row> extends _i1.SmartFake
     implements _i3.BaseSelectStatement<Row> {
-  _FakeBaseSelectStatement_13(Object parent, Invocation parentInvocation)
+  _FakeBaseSelectStatement_12(Object parent, Invocation parentInvocation)
     : super(parent, parentInvocation);
 }
 
-class _FakeDeleteStatement_14<T1 extends _i3.Table, D1> extends _i1.SmartFake
+class _FakeDeleteStatement_13<T1 extends _i3.Table, D1> extends _i1.SmartFake
     implements _i3.DeleteStatement<T1, D1> {
-  _FakeDeleteStatement_14(Object parent, Invocation parentInvocation)
+  _FakeDeleteStatement_13(Object parent, Invocation parentInvocation)
     : super(parent, parentInvocation);
 }
 
-class _FakeSelectable_15<T> extends _i1.SmartFake implements _i3.Selectable<T> {
-  _FakeSelectable_15(Object parent, Invocation parentInvocation)
+class _FakeSelectable_14<T> extends _i1.SmartFake implements _i3.Selectable<T> {
+  _FakeSelectable_14(Object parent, Invocation parentInvocation)
     : super(parent, parentInvocation);
 }
 
-class _FakeGenerationContext_16 extends _i1.SmartFake
+class _FakeGenerationContext_15 extends _i1.SmartFake
     implements _i3.GenerationContext {
-  _FakeGenerationContext_16(Object parent, Invocation parentInvocation)
+  _FakeGenerationContext_15(Object parent, Invocation parentInvocation)
     : super(parent, parentInvocation);
 }
 
@@ -241,14 +236,12 @@ class MockCategoryTableHelper extends _i1.Mock
           as _i5.Future<List<_i2.CategoryData>>);
 
   @override
-  _i5.Future<_i2.CategoryData> getById(int? id) =>
+  _i5.Future<_i2.CategoryData?> getById(int? id) =>
       (super.noSuchMethod(
             Invocation.method(#getById, [id]),
-            returnValue: _i5.Future<_i2.CategoryData>.value(
-              _FakeCategoryData_7(this, Invocation.method(#getById, [id])),
-            ),
+            returnValue: _i5.Future<_i2.CategoryData?>.value(),
           )
-          as _i5.Future<_i2.CategoryData>);
+          as _i5.Future<_i2.CategoryData?>);
 
   @override
   _i5.Future<_i2.CategoryData?> getByName(String? name) =>
@@ -334,7 +327,7 @@ class MockCategoryTableHelper extends _i1.Mock
                   ),
                   (T v) => _i5.Future<T>.value(v),
                 ) ??
-                _FakeFuture_8<T>(this, Invocation.method(#doWhenOpened, [fn])),
+                _FakeFuture_7<T>(this, Invocation.method(#doWhenOpened, [fn])),
           )
           as _i5.Future<T>);
 
@@ -344,7 +337,7 @@ class MockCategoryTableHelper extends _i1.Mock
   ) =>
       (super.noSuchMethod(
             Invocation.method(#into, [table]),
-            returnValue: _FakeInsertStatement_9<T, D>(
+            returnValue: _FakeInsertStatement_8<T, D>(
               this,
               Invocation.method(#into, [table]),
             ),
@@ -357,7 +350,7 @@ class MockCategoryTableHelper extends _i1.Mock
   ) =>
       (super.noSuchMethod(
             Invocation.method(#update, [table]),
-            returnValue: _FakeUpdateStatement_10<Tbl, R>(
+            returnValue: _FakeUpdateStatement_9<Tbl, R>(
               this,
               Invocation.method(#update, [table]),
             ),
@@ -371,7 +364,7 @@ class MockCategoryTableHelper extends _i1.Mock
   }) =>
       (super.noSuchMethod(
             Invocation.method(#select, [table], {#distinct: distinct}),
-            returnValue: _FakeSimpleSelectStatement_11<T, R>(
+            returnValue: _FakeSimpleSelectStatement_10<T, R>(
               this,
               Invocation.method(#select, [table], {#distinct: distinct}),
             ),
@@ -385,7 +378,7 @@ class MockCategoryTableHelper extends _i1.Mock
   }) =>
       (super.noSuchMethod(
             Invocation.method(#selectOnly, [table], {#distinct: distinct}),
-            returnValue: _FakeJoinedSelectStatement_12<T, R>(
+            returnValue: _FakeJoinedSelectStatement_11<T, R>(
               this,
               Invocation.method(#selectOnly, [table], {#distinct: distinct}),
             ),
@@ -398,7 +391,7 @@ class MockCategoryTableHelper extends _i1.Mock
   ) =>
       (super.noSuchMethod(
             Invocation.method(#selectExpressions, [columns]),
-            returnValue: _FakeBaseSelectStatement_13<_i3.TypedResult>(
+            returnValue: _FakeBaseSelectStatement_12<_i3.TypedResult>(
               this,
               Invocation.method(#selectExpressions, [columns]),
             ),
@@ -411,7 +404,7 @@ class MockCategoryTableHelper extends _i1.Mock
   ) =>
       (super.noSuchMethod(
             Invocation.method(#delete, [table]),
-            returnValue: _FakeDeleteStatement_14<T, D>(
+            returnValue: _FakeDeleteStatement_13<T, D>(
               this,
               Invocation.method(#delete, [table]),
             ),
@@ -488,7 +481,7 @@ class MockCategoryTableHelper extends _i1.Mock
               [query],
               {#variables: variables, #readsFrom: readsFrom},
             ),
-            returnValue: _FakeSelectable_15<_i3.QueryRow>(
+            returnValue: _FakeSelectable_14<_i3.QueryRow>(
               this,
               Invocation.method(
                 #customSelect,
@@ -511,7 +504,7 @@ class MockCategoryTableHelper extends _i1.Mock
               [query],
               {#variables: variables, #readsFrom: readsFrom},
             ),
-            returnValue: _FakeSelectable_15<_i3.QueryRow>(
+            returnValue: _FakeSelectable_14<_i3.QueryRow>(
               this,
               Invocation.method(
                 #customSelectQuery,
@@ -554,7 +547,7 @@ class MockCategoryTableHelper extends _i1.Mock
                   ),
                   (T v) => _i5.Future<T>.value(v),
                 ) ??
-                _FakeFuture_8<T>(
+                _FakeFuture_7<T>(
                   this,
                   Invocation.method(
                     #transaction,
@@ -577,7 +570,7 @@ class MockCategoryTableHelper extends _i1.Mock
                   ),
                   (T v) => _i5.Future<T>.value(v),
                 ) ??
-                _FakeFuture_8<T>(
+                _FakeFuture_7<T>(
                   this,
                   Invocation.method(#exclusively, [action]),
                 ),
@@ -616,7 +609,7 @@ class MockCategoryTableHelper extends _i1.Mock
                   ),
                   (T v) => _i5.Future<T>.value(v),
                 ) ??
-                _FakeFuture_8<T>(
+                _FakeFuture_7<T>(
                   this,
                   Invocation.method(
                     #runWithInterceptor,
@@ -639,7 +632,7 @@ class MockCategoryTableHelper extends _i1.Mock
               [component],
               {#hasMultipleTables: hasMultipleTables, #startIndex: startIndex},
             ),
-            returnValue: _FakeGenerationContext_16(
+            returnValue: _FakeGenerationContext_15(
               this,
               Invocation.method(
                 #$write,
@@ -665,7 +658,7 @@ class MockCategoryTableHelper extends _i1.Mock
               [table, insertable],
               {#startIndex: startIndex},
             ),
-            returnValue: _FakeGenerationContext_16(
+            returnValue: _FakeGenerationContext_15(
               this,
               Invocation.method(
                 #$writeInsertable,

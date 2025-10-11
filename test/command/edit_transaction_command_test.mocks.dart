@@ -3,18 +3,19 @@
 // Do not manually edit this file.
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'dart:async' as _i9;
-import 'dart:ui' as _i10;
+import 'dart:async' as _i10;
+import 'dart:ui' as _i11;
 
 import 'package:fin_fit_app_mobile/helper/category_table_helper.dart' as _i3;
+import 'package:fin_fit_app_mobile/helper/goal_table_helper.dart' as _i4;
 import 'package:fin_fit_app_mobile/helper/movement_table_helper.dart' as _i2;
-import 'package:fin_fit_app_mobile/service/database.dart' as _i8;
-import 'package:fin_fit_app_mobile/ui/transaction_page.dart' as _i4;
-import 'package:flutter/foundation.dart' as _i6;
-import 'package:flutter/material.dart' as _i5;
-import 'package:flutter/services.dart' as _i11;
+import 'package:fin_fit_app_mobile/service/database.dart' as _i9;
+import 'package:fin_fit_app_mobile/ui/transaction_page.dart' as _i5;
+import 'package:flutter/foundation.dart' as _i7;
+import 'package:flutter/material.dart' as _i6;
+import 'package:flutter/services.dart' as _i12;
 import 'package:mockito/mockito.dart' as _i1;
-import 'package:mockito/src/dummies.dart' as _i7;
+import 'package:mockito/src/dummies.dart' as _i8;
 
 // ignore_for_file: type=lint
 // ignore_for_file: avoid_redundant_argument_values
@@ -42,56 +43,67 @@ class _FakeCategoryTableHelper_1 extends _i1.SmartFake
     : super(parent, parentInvocation);
 }
 
-class _FakeTransactionPageStateful_2 extends _i1.SmartFake
-    implements _i4.TransactionPageStateful {
-  _FakeTransactionPageStateful_2(Object parent, Invocation parentInvocation)
+class _FakeGoalTableHelper_2 extends _i1.SmartFake
+    implements _i4.GoalTableHelper {
+  _FakeGoalTableHelper_2(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
+}
+
+class _FakeDateTime_3 extends _i1.SmartFake implements DateTime {
+  _FakeDateTime_3(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
+}
+
+class _FakeTransactionPageStateful_4 extends _i1.SmartFake
+    implements _i5.TransactionPageStateful {
+  _FakeTransactionPageStateful_4(Object parent, Invocation parentInvocation)
     : super(parent, parentInvocation);
 
   @override
-  String toString({_i5.DiagnosticLevel? minLevel = _i5.DiagnosticLevel.info}) =>
+  String toString({_i6.DiagnosticLevel? minLevel = _i6.DiagnosticLevel.info}) =>
       super.toString();
 }
 
-class _FakeBuildContext_3 extends _i1.SmartFake implements _i5.BuildContext {
-  _FakeBuildContext_3(Object parent, Invocation parentInvocation)
+class _FakeBuildContext_5 extends _i1.SmartFake implements _i6.BuildContext {
+  _FakeBuildContext_5(Object parent, Invocation parentInvocation)
     : super(parent, parentInvocation);
 }
 
-class _FakeWidget_4 extends _i1.SmartFake implements _i5.Widget {
-  _FakeWidget_4(Object parent, Invocation parentInvocation)
+class _FakeWidget_6 extends _i1.SmartFake implements _i6.Widget {
+  _FakeWidget_6(Object parent, Invocation parentInvocation)
     : super(parent, parentInvocation);
 
   @override
-  String toString({_i5.DiagnosticLevel? minLevel = _i5.DiagnosticLevel.info}) =>
+  String toString({_i6.DiagnosticLevel? minLevel = _i6.DiagnosticLevel.info}) =>
       super.toString();
 }
 
-class _FakeDiagnosticsNode_5 extends _i1.SmartFake
-    implements _i5.DiagnosticsNode {
-  _FakeDiagnosticsNode_5(Object parent, Invocation parentInvocation)
+class _FakeDiagnosticsNode_7 extends _i1.SmartFake
+    implements _i6.DiagnosticsNode {
+  _FakeDiagnosticsNode_7(Object parent, Invocation parentInvocation)
     : super(parent, parentInvocation);
 
   @override
   String toString({
-    _i6.TextTreeConfiguration? parentConfiguration,
-    _i5.DiagnosticLevel? minLevel = _i5.DiagnosticLevel.info,
+    _i7.TextTreeConfiguration? parentConfiguration,
+    _i6.DiagnosticLevel? minLevel = _i6.DiagnosticLevel.info,
   }) => super.toString();
 }
 
-class _FakeInheritedWidget_6 extends _i1.SmartFake
-    implements _i5.InheritedWidget {
-  _FakeInheritedWidget_6(Object parent, Invocation parentInvocation)
+class _FakeInheritedWidget_8 extends _i1.SmartFake
+    implements _i6.InheritedWidget {
+  _FakeInheritedWidget_8(Object parent, Invocation parentInvocation)
     : super(parent, parentInvocation);
 
   @override
-  String toString({_i5.DiagnosticLevel? minLevel = _i5.DiagnosticLevel.info}) =>
+  String toString({_i6.DiagnosticLevel? minLevel = _i6.DiagnosticLevel.info}) =>
       super.toString();
 }
 
 /// A class which mocks [TransactionPage].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockTransactionPage extends _i1.Mock implements _i4.TransactionPage {
+class MockTransactionPage extends _i1.Mock implements _i5.TransactionPage {
   MockTransactionPage() {
     _i1.throwOnMissingStub(this);
   }
@@ -100,7 +112,7 @@ class MockTransactionPage extends _i1.Mock implements _i4.TransactionPage {
   String get date =>
       (super.noSuchMethod(
             Invocation.getter(#date),
-            returnValue: _i7.dummyValue<String>(this, Invocation.getter(#date)),
+            returnValue: _i8.dummyValue<String>(this, Invocation.getter(#date)),
           )
           as String);
 
@@ -147,43 +159,75 @@ class MockTransactionPage extends _i1.Mock implements _i4.TransactionPage {
       );
 
   @override
-  List<_i8.CategoryData> get categories =>
+  _i4.GoalTableHelper get goalTableHelper =>
       (super.noSuchMethod(
-            Invocation.getter(#categories),
-            returnValue: <_i8.CategoryData>[],
+            Invocation.getter(#goalTableHelper),
+            returnValue: _FakeGoalTableHelper_2(
+              this,
+              Invocation.getter(#goalTableHelper),
+            ),
           )
-          as List<_i8.CategoryData>);
+          as _i4.GoalTableHelper);
 
   @override
-  set categories(List<_i8.CategoryData>? _categories) => super.noSuchMethod(
+  set goalTableHelper(_i4.GoalTableHelper? _goalTableHelper) =>
+      super.noSuchMethod(
+        Invocation.setter(#goalTableHelper, _goalTableHelper),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  List<_i9.CategoryData> get categories =>
+      (super.noSuchMethod(
+            Invocation.getter(#categories),
+            returnValue: <_i9.CategoryData>[],
+          )
+          as List<_i9.CategoryData>);
+
+  @override
+  set categories(List<_i9.CategoryData>? _categories) => super.noSuchMethod(
     Invocation.setter(#categories, _categories),
     returnValueForMissingStub: null,
   );
 
   @override
-  List<_i5.Widget> get containers =>
+  List<_i9.GoalData> get goals =>
       (super.noSuchMethod(
-            Invocation.getter(#containers),
-            returnValue: <_i5.Widget>[],
+            Invocation.getter(#goals),
+            returnValue: <_i9.GoalData>[],
           )
-          as List<_i5.Widget>);
+          as List<_i9.GoalData>);
 
   @override
-  set containers(List<_i5.Widget>? _containers) => super.noSuchMethod(
+  set goals(List<_i9.GoalData>? _goals) => super.noSuchMethod(
+    Invocation.setter(#goals, _goals),
+    returnValueForMissingStub: null,
+  );
+
+  @override
+  List<_i6.Widget> get containers =>
+      (super.noSuchMethod(
+            Invocation.getter(#containers),
+            returnValue: <_i6.Widget>[],
+          )
+          as List<_i6.Widget>);
+
+  @override
+  set containers(List<_i6.Widget>? _containers) => super.noSuchMethod(
     Invocation.setter(#containers, _containers),
     returnValueForMissingStub: null,
   );
 
   @override
-  List<_i8.MovementData> get transactions =>
+  List<_i9.MovementData> get transactions =>
       (super.noSuchMethod(
             Invocation.getter(#transactions),
-            returnValue: <_i8.MovementData>[],
+            returnValue: <_i9.MovementData>[],
           )
-          as List<_i8.MovementData>);
+          as List<_i9.MovementData>);
 
   @override
-  set transactions(List<_i8.MovementData>? _transactions) => super.noSuchMethod(
+  set transactions(List<_i9.MovementData>? _transactions) => super.noSuchMethod(
     Invocation.setter(#transactions, _transactions),
     returnValueForMissingStub: null,
   );
@@ -192,7 +236,7 @@ class MockTransactionPage extends _i1.Mock implements _i4.TransactionPage {
   String get title =>
       (super.noSuchMethod(
             Invocation.getter(#title),
-            returnValue: _i7.dummyValue<String>(
+            returnValue: _i8.dummyValue<String>(
               this,
               Invocation.getter(#title),
             ),
@@ -209,7 +253,7 @@ class MockTransactionPage extends _i1.Mock implements _i4.TransactionPage {
   String get actionButton =>
       (super.noSuchMethod(
             Invocation.getter(#actionButton),
-            returnValue: _i7.dummyValue<String>(
+            returnValue: _i8.dummyValue<String>(
               this,
               Invocation.getter(#actionButton),
             ),
@@ -226,7 +270,7 @@ class MockTransactionPage extends _i1.Mock implements _i4.TransactionPage {
   String get locale =>
       (super.noSuchMethod(
             Invocation.getter(#locale),
-            returnValue: _i7.dummyValue<String>(
+            returnValue: _i8.dummyValue<String>(
               this,
               Invocation.getter(#locale),
             ),
@@ -236,6 +280,20 @@ class MockTransactionPage extends _i1.Mock implements _i4.TransactionPage {
   @override
   set locale(String? _locale) => super.noSuchMethod(
     Invocation.setter(#locale, _locale),
+    returnValueForMissingStub: null,
+  );
+
+  @override
+  DateTime get dateTime =>
+      (super.noSuchMethod(
+            Invocation.getter(#dateTime),
+            returnValue: _FakeDateTime_3(this, Invocation.getter(#dateTime)),
+          )
+          as DateTime);
+
+  @override
+  set dateTime(DateTime? _dateTime) => super.noSuchMethod(
+    Invocation.setter(#dateTime, _dateTime),
     returnValueForMissingStub: null,
   );
 
@@ -254,23 +312,23 @@ class MockTransactionPage extends _i1.Mock implements _i4.TransactionPage {
   );
 
   @override
-  _i4.TransactionPageStateful get widget =>
+  _i5.TransactionPageStateful get widget =>
       (super.noSuchMethod(
             Invocation.getter(#widget),
-            returnValue: _FakeTransactionPageStateful_2(
+            returnValue: _FakeTransactionPageStateful_4(
               this,
               Invocation.getter(#widget),
             ),
           )
-          as _i4.TransactionPageStateful);
+          as _i5.TransactionPageStateful);
 
   @override
-  _i5.BuildContext get context =>
+  _i6.BuildContext get context =>
       (super.noSuchMethod(
             Invocation.getter(#context),
-            returnValue: _FakeBuildContext_3(this, Invocation.getter(#context)),
+            returnValue: _FakeBuildContext_5(this, Invocation.getter(#context)),
           )
-          as _i5.BuildContext);
+          as _i6.BuildContext);
 
   @override
   bool get mounted =>
@@ -284,15 +342,15 @@ class MockTransactionPage extends _i1.Mock implements _i4.TransactionPage {
   );
 
   @override
-  _i5.Widget build(_i5.BuildContext? context) =>
+  _i6.Widget build(_i6.BuildContext? context) =>
       (super.noSuchMethod(
             Invocation.method(#build, [context]),
-            returnValue: _FakeWidget_4(
+            returnValue: _FakeWidget_6(
               this,
               Invocation.method(#build, [context]),
             ),
           )
-          as _i5.Widget);
+          as _i6.Widget);
 
   @override
   void setTransactionDialogText(bool? isToAdd) => super.noSuchMethod(
@@ -301,45 +359,45 @@ class MockTransactionPage extends _i1.Mock implements _i4.TransactionPage {
   );
 
   @override
-  void setFields(_i8.MovementData? item) => super.noSuchMethod(
+  void setFields(_i9.MovementData? item) => super.noSuchMethod(
     Invocation.method(#setFields, [item]),
     returnValueForMissingStub: null,
   );
 
   @override
-  _i5.Widget getInflowOrOutflowIcon(bool? isIncome) =>
+  _i6.Widget getInflowOrOutflowIcon(bool? isIncome) =>
       (super.noSuchMethod(
             Invocation.method(#getInflowOrOutflowIcon, [isIncome]),
-            returnValue: _FakeWidget_4(
+            returnValue: _FakeWidget_6(
               this,
               Invocation.method(#getInflowOrOutflowIcon, [isIncome]),
             ),
           )
-          as _i5.Widget);
+          as _i6.Widget);
 
   @override
-  _i9.Future<void> showAddOrEditDialog(bool? isToAdd, int? id) =>
+  _i10.Future<void> showAddOrEditDialog(bool? isToAdd, int? id) =>
       (super.noSuchMethod(
             Invocation.method(#showAddOrEditDialog, [isToAdd, id]),
-            returnValue: _i9.Future<void>.value(),
-            returnValueForMissingStub: _i9.Future<void>.value(),
+            returnValue: _i10.Future<void>.value(),
+            returnValueForMissingStub: _i10.Future<void>.value(),
           )
-          as _i9.Future<void>);
+          as _i10.Future<void>);
 
   @override
-  _i9.Future<void> showDeleteDialog(int? id) =>
+  _i10.Future<void> showDeleteDialog(int? id) =>
       (super.noSuchMethod(
             Invocation.method(#showDeleteDialog, [id]),
-            returnValue: _i9.Future<void>.value(),
-            returnValueForMissingStub: _i9.Future<void>.value(),
+            returnValue: _i10.Future<void>.value(),
+            returnValueForMissingStub: _i10.Future<void>.value(),
           )
-          as _i9.Future<void>);
+          as _i10.Future<void>);
 
   @override
   String returnMonthAndYear(DateTime? date) =>
       (super.noSuchMethod(
             Invocation.method(#returnMonthAndYear, [date]),
-            returnValue: _i7.dummyValue<String>(
+            returnValue: _i8.dummyValue<String>(
               this,
               Invocation.method(#returnMonthAndYear, [date]),
             ),
@@ -347,7 +405,7 @@ class MockTransactionPage extends _i1.Mock implements _i4.TransactionPage {
           as String);
 
   @override
-  void didUpdateWidget(_i4.TransactionPageStateful? oldWidget) =>
+  void didUpdateWidget(_i5.TransactionPageStateful? oldWidget) =>
       super.noSuchMethod(
         Invocation.method(#didUpdateWidget, [oldWidget]),
         returnValueForMissingStub: null,
@@ -360,7 +418,7 @@ class MockTransactionPage extends _i1.Mock implements _i4.TransactionPage {
   );
 
   @override
-  void setState(_i10.VoidCallback? fn) => super.noSuchMethod(
+  void setState(_i11.VoidCallback? fn) => super.noSuchMethod(
     Invocation.method(#setState, [fn]),
     returnValueForMissingStub: null,
   );
@@ -390,21 +448,21 @@ class MockTransactionPage extends _i1.Mock implements _i4.TransactionPage {
   );
 
   @override
-  void debugFillProperties(_i11.DiagnosticPropertiesBuilder? properties) =>
+  void debugFillProperties(_i12.DiagnosticPropertiesBuilder? properties) =>
       super.noSuchMethod(
         Invocation.method(#debugFillProperties, [properties]),
         returnValueForMissingStub: null,
       );
 
   @override
-  String toString({_i5.DiagnosticLevel? minLevel = _i5.DiagnosticLevel.info}) =>
+  String toString({_i6.DiagnosticLevel? minLevel = _i6.DiagnosticLevel.info}) =>
       super.toString();
 
   @override
   String toStringShort() =>
       (super.noSuchMethod(
             Invocation.method(#toStringShort, []),
-            returnValue: _i7.dummyValue<String>(
+            returnValue: _i8.dummyValue<String>(
               this,
               Invocation.method(#toStringShort, []),
             ),
@@ -412,16 +470,16 @@ class MockTransactionPage extends _i1.Mock implements _i4.TransactionPage {
           as String);
 
   @override
-  _i5.DiagnosticsNode toDiagnosticsNode({
+  _i6.DiagnosticsNode toDiagnosticsNode({
     String? name,
-    _i6.DiagnosticsTreeStyle? style,
+    _i7.DiagnosticsTreeStyle? style,
   }) =>
       (super.noSuchMethod(
             Invocation.method(#toDiagnosticsNode, [], {
               #name: name,
               #style: style,
             }),
-            returnValue: _FakeDiagnosticsNode_5(
+            returnValue: _FakeDiagnosticsNode_7(
               this,
               Invocation.method(#toDiagnosticsNode, [], {
                 #name: name,
@@ -429,24 +487,24 @@ class MockTransactionPage extends _i1.Mock implements _i4.TransactionPage {
               }),
             ),
           )
-          as _i5.DiagnosticsNode);
+          as _i6.DiagnosticsNode);
 }
 
 /// A class which mocks [BuildContext].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockBuildContext extends _i1.Mock implements _i5.BuildContext {
+class MockBuildContext extends _i1.Mock implements _i6.BuildContext {
   MockBuildContext() {
     _i1.throwOnMissingStub(this);
   }
 
   @override
-  _i5.Widget get widget =>
+  _i6.Widget get widget =>
       (super.noSuchMethod(
             Invocation.getter(#widget),
-            returnValue: _FakeWidget_4(this, Invocation.getter(#widget)),
+            returnValue: _FakeWidget_6(this, Invocation.getter(#widget)),
           )
-          as _i5.Widget);
+          as _i6.Widget);
 
   @override
   bool get mounted =>
@@ -462,8 +520,8 @@ class MockBuildContext extends _i1.Mock implements _i5.BuildContext {
           as bool);
 
   @override
-  _i5.InheritedWidget dependOnInheritedElement(
-    _i5.InheritedElement? ancestor, {
+  _i6.InheritedWidget dependOnInheritedElement(
+    _i6.InheritedElement? ancestor, {
     Object? aspect,
   }) =>
       (super.noSuchMethod(
@@ -472,7 +530,7 @@ class MockBuildContext extends _i1.Mock implements _i5.BuildContext {
               [ancestor],
               {#aspect: aspect},
             ),
-            returnValue: _FakeInheritedWidget_6(
+            returnValue: _FakeInheritedWidget_8(
               this,
               Invocation.method(
                 #dependOnInheritedElement,
@@ -481,76 +539,76 @@ class MockBuildContext extends _i1.Mock implements _i5.BuildContext {
               ),
             ),
           )
-          as _i5.InheritedWidget);
+          as _i6.InheritedWidget);
 
   @override
-  void visitAncestorElements(_i5.ConditionalElementVisitor? visitor) =>
+  void visitAncestorElements(_i6.ConditionalElementVisitor? visitor) =>
       super.noSuchMethod(
         Invocation.method(#visitAncestorElements, [visitor]),
         returnValueForMissingStub: null,
       );
 
   @override
-  void visitChildElements(_i5.ElementVisitor? visitor) => super.noSuchMethod(
+  void visitChildElements(_i6.ElementVisitor? visitor) => super.noSuchMethod(
     Invocation.method(#visitChildElements, [visitor]),
     returnValueForMissingStub: null,
   );
 
   @override
-  void dispatchNotification(_i5.Notification? notification) =>
+  void dispatchNotification(_i6.Notification? notification) =>
       super.noSuchMethod(
         Invocation.method(#dispatchNotification, [notification]),
         returnValueForMissingStub: null,
       );
 
   @override
-  _i5.DiagnosticsNode describeElement(
+  _i6.DiagnosticsNode describeElement(
     String? name, {
-    _i6.DiagnosticsTreeStyle? style = _i6.DiagnosticsTreeStyle.errorProperty,
+    _i7.DiagnosticsTreeStyle? style = _i7.DiagnosticsTreeStyle.errorProperty,
   }) =>
       (super.noSuchMethod(
             Invocation.method(#describeElement, [name], {#style: style}),
-            returnValue: _FakeDiagnosticsNode_5(
+            returnValue: _FakeDiagnosticsNode_7(
               this,
               Invocation.method(#describeElement, [name], {#style: style}),
             ),
           )
-          as _i5.DiagnosticsNode);
+          as _i6.DiagnosticsNode);
 
   @override
-  _i5.DiagnosticsNode describeWidget(
+  _i6.DiagnosticsNode describeWidget(
     String? name, {
-    _i6.DiagnosticsTreeStyle? style = _i6.DiagnosticsTreeStyle.errorProperty,
+    _i7.DiagnosticsTreeStyle? style = _i7.DiagnosticsTreeStyle.errorProperty,
   }) =>
       (super.noSuchMethod(
             Invocation.method(#describeWidget, [name], {#style: style}),
-            returnValue: _FakeDiagnosticsNode_5(
+            returnValue: _FakeDiagnosticsNode_7(
               this,
               Invocation.method(#describeWidget, [name], {#style: style}),
             ),
           )
-          as _i5.DiagnosticsNode);
+          as _i6.DiagnosticsNode);
 
   @override
-  List<_i5.DiagnosticsNode> describeMissingAncestor({
+  List<_i6.DiagnosticsNode> describeMissingAncestor({
     required Type? expectedAncestorType,
   }) =>
       (super.noSuchMethod(
             Invocation.method(#describeMissingAncestor, [], {
               #expectedAncestorType: expectedAncestorType,
             }),
-            returnValue: <_i5.DiagnosticsNode>[],
+            returnValue: <_i6.DiagnosticsNode>[],
           )
-          as List<_i5.DiagnosticsNode>);
+          as List<_i6.DiagnosticsNode>);
 
   @override
-  _i5.DiagnosticsNode describeOwnershipChain(String? name) =>
+  _i6.DiagnosticsNode describeOwnershipChain(String? name) =>
       (super.noSuchMethod(
             Invocation.method(#describeOwnershipChain, [name]),
-            returnValue: _FakeDiagnosticsNode_5(
+            returnValue: _FakeDiagnosticsNode_7(
               this,
               Invocation.method(#describeOwnershipChain, [name]),
             ),
           )
-          as _i5.DiagnosticsNode);
+          as _i6.DiagnosticsNode);
 }

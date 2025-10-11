@@ -6,7 +6,8 @@ import '../service/database.dart';
 part 'category_table_helper.g.dart';
 
 @DriftAccessor(tables: [Category])
-class CategoryTableHelper extends DatabaseAccessor<Database> with _$CategoryTableHelperMixin {
+class CategoryTableHelper extends DatabaseAccessor<Database>
+    with _$CategoryTableHelperMixin {
   CategoryTableHelper(super.db);
 
   // returns the generated id
@@ -18,12 +19,18 @@ class CategoryTableHelper extends DatabaseAccessor<Database> with _$CategoryTabl
     return await select(category).get();
   }
 
-  Future<CategoryData> getById(int id) async {
-    return await (select(category)..where((tbl) => tbl.id.equals(id))).getSingle();
+  Future<CategoryData?> getById(int id) async {
+    try {
+      return await (select(category)..where((tbl) => tbl.id.equals(id)))
+          .getSingle();
+    } on StateError {
+      return null;
+    }
   }
 
   Future<CategoryData?> getByName(String name) async {
-    return await (select(category)..where((tbl) => tbl.name.equals(name))).getSingleOrNull();
+    return await (select(category)..where((tbl) => tbl.name.equals(name)))
+        .getSingleOrNull();
   }
 
   Future<void> updateCategoryById(CategoryCompanion entry, int id) async {

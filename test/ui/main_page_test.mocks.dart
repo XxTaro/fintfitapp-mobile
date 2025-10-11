@@ -286,6 +286,16 @@ class MockMovementTableHelper extends _i1.Mock
           as _i5.Future<int>);
 
   @override
+  _i5.Future<List<_i2.MovementData>> getByGoalId(int? goalId) =>
+      (super.noSuchMethod(
+            Invocation.method(#getByGoalId, [goalId]),
+            returnValue: _i5.Future<List<_i2.MovementData>>.value(
+              <_i2.MovementData>[],
+            ),
+          )
+          as _i5.Future<List<_i2.MovementData>>);
+
+  @override
   _i5.Stream<T> createStream<T extends Object>(
     _i4.QueryStreamFetcher<T>? stmt,
   ) =>
