@@ -286,7 +286,7 @@ class _GoalPageStatefulState extends State<GoalPageStateful> implements PopUp {
 
     final value = await showMenu<int>(
       context: context,
-      position: RelativeRect.fromRect(globalPosition & const Size(40, 40), Offset.zero & (Overlay.of(context).context.findRenderObject() as RenderBox).size),
+      position: RelativeRect.fromRect(globalPosition & const Size(40, 40), Offset.zero & (Overlay.of(context).context.findRenderObject()! as RenderBox).size),
       items: const [
         PopupMenuItem(value: editGoal, child: Text("Editar")),
         PopupMenuItem(value: deleteGoal, child: Text("Deletar")),

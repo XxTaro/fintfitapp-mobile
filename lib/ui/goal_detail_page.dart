@@ -473,7 +473,7 @@ class _GoalDetailPageState extends State<GoalDetailPage> implements PopUp {
       goalId: drift.Value(_selectedGoal?.id),
     );
 
-    widget.movementTableHelper.updateTransaction(updatedMovement);
+    await widget.movementTableHelper.updateTransaction(updatedMovement);
   }
 
   Future<void> _selectDate() async {
