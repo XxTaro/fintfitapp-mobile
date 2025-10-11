@@ -37,6 +37,7 @@ class _GoalDetailPageState extends State<GoalDetailPage> implements PopUp {
   static const int deleteTransaction = 2;
 
   late GoalData _currentGoal;
+  late Future<List<MovementData>> _movementsFuture;
   double _currentAmount = 0.0;
   List<CategoryData> _categories = [];
   List<GoalData> _goals = [];
@@ -52,6 +53,7 @@ class _GoalDetailPageState extends State<GoalDetailPage> implements PopUp {
   void initState() {
     super.initState();
     _currentGoal = widget.goal;
+    _movementsFuture = widget.movementTableHelper.getByGoalId(_currentGoal.id);
     _loadInitialData();
   }
 
@@ -64,15 +66,23 @@ class _GoalDetailPageState extends State<GoalDetailPage> implements PopUp {
   }
 
   Future<void> _loadInitialData() async {
-    final categories = await widget.categoryTableHelper.getAllCategories();
-    final goals = await widget.goalTableHelper.getAllGoals();
-    
-    setState(() {
-      _categories = categories;
-      _goals = goals;
-    });
+    try {
+      final categories = await widget.categoryTableHelper.getAllCategories();
+      final goals = await widget.goalTableHelper.getAllGoals();
 
-    await _refreshGoalProgress();
+      final movements = await _movementsFuture;
+      final total =
+          movements.fold<double>(0.0, (sum, item) => sum + item.value);
+
+      if (mounted) {
+        setState(() {
+          _categories = categories;
+          _goals = goals;
+          _currentAmount = total;
+        });
+      }
+      // ignore: avoid_catches_without_on_clauses, empty_catches
+    } catch (e) {}
   }
 
   Future<void> _refreshGoalProgress() async {
@@ -110,7 +120,7 @@ class _GoalDetailPageState extends State<GoalDetailPage> implements PopUp {
 
   Widget _buildGoalDetails() {
     return FutureBuilder<List<MovementData>>(
-      future: widget.movementTableHelper.getByGoalId(_currentGoal.id),
+      future: _movementsFuture,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
@@ -126,7 +136,8 @@ class _GoalDetailPageState extends State<GoalDetailPage> implements PopUp {
                 currentAmount: _currentAmount,
               ),
               const Expanded(
-                child: Center(child: Text('Não existem transações para esta meta!')),
+                child: Center(
+                    child: Text('Não existem transações para esta meta!')),
               ),
             ],
           );
@@ -140,7 +151,7 @@ class _GoalDetailPageState extends State<GoalDetailPage> implements PopUp {
               currentAmount: _currentAmount,
             ),
             Expanded(
-              child: _TransactionListView(
+              child: TransactionListView(
                 transactions: movements,
                 onTransactionTapped: (position, item) {
                   _showPopupMenu(position, item);
@@ -153,7 +164,6 @@ class _GoalDetailPageState extends State<GoalDetailPage> implements PopUp {
     );
   }
 
-  // Lógica para Popup de Ações da Transação
   Future<void> _showPopupMenu(Offset globalPosition, MovementData item) async {
     final commands = {
       editTransaction: EditPopUpCommand(context, this, item.id),
@@ -162,8 +172,8 @@ class _GoalDetailPageState extends State<GoalDetailPage> implements PopUp {
 
     final value = await showMenu<int>(
       context: context,
-      position: RelativeRect.fromLTRB(
-          globalPosition.dx, globalPosition.dy, globalPosition.dx, globalPosition.dy),
+      position: RelativeRect.fromLTRB(globalPosition.dx, globalPosition.dy,
+          globalPosition.dx, globalPosition.dy),
       items: const [
         PopupMenuItem(value: editTransaction, child: Text("Editar")),
         PopupMenuItem(value: deleteTransaction, child: Text("Deletar")),
@@ -175,12 +185,12 @@ class _GoalDetailPageState extends State<GoalDetailPage> implements PopUp {
     }
   }
 
-  // Lógica para Edição da Meta
   Future<void> _showEditGoalDialog(GoalData goal) async {
     _descriptionController.text = goal.description;
     _valueController.text = goal.value.toString();
     _dateController.text = DateFormat('dd/MM/yyyy').format(goal.dateEnd);
-    _selectedCategory = await widget.categoryTableHelper.getById(goal.categoryId);
+    _selectedCategory =
+        await widget.categoryTableHelper.getById(goal.categoryId);
 
     final bool? result = await showDialog<bool>(
       context: context,
@@ -195,26 +205,29 @@ class _GoalDetailPageState extends State<GoalDetailPage> implements PopUp {
       ));
       final updatedGoal = await widget.goalTableHelper.getById(goal.id);
       setState(() {
-        if(updatedGoal != null) _currentGoal = updatedGoal;
+        if (updatedGoal != null) _currentGoal = updatedGoal;
       });
       await _refreshGoalProgress();
     }
   }
 
   Widget _buildGoalEditDialog(GoalData goal) {
-     return AlertDialog(
+    return AlertDialog(
       title: const Text('Editar meta'),
       content: SingleChildScrollView(
         child: ListBody(
           children: <Widget>[
             TextField(
               controller: _descriptionController,
-              decoration: const InputDecoration(labelText: 'Descrição', prefixIcon: Icon(Icons.description)),
+              decoration: const InputDecoration(
+                  labelText: 'Descrição', prefixIcon: Icon(Icons.description)),
             ),
             const SizedBox(height: 20),
             TextField(
               controller: _valueController,
-              decoration: const InputDecoration(labelText: 'Valor alvo', prefixIcon: Icon(Icons.attach_money)),
+              decoration: const InputDecoration(
+                  labelText: 'Valor alvo',
+                  prefixIcon: Icon(Icons.attach_money)),
               keyboardType: TextInputType.number,
               inputFormatters: [FilteringTextInputFormatter.digitsOnly],
             ),
@@ -223,7 +236,8 @@ class _GoalDetailPageState extends State<GoalDetailPage> implements PopUp {
               controller: _dateController,
               readOnly: true,
               onTap: _selectDate,
-              decoration: const InputDecoration(labelText: 'Data', prefixIcon: Icon(Icons.calendar_today)),
+              decoration: const InputDecoration(
+                  labelText: 'Data', prefixIcon: Icon(Icons.calendar_today)),
             ),
           ],
         ),
@@ -245,16 +259,18 @@ class _GoalDetailPageState extends State<GoalDetailPage> implements PopUp {
   }
 
   void _handleGoalUpdate(GoalData originalGoal) {
-    if (_descriptionController.text.isEmpty || _valueController.text.isEmpty || _dateController.text.isEmpty) {
+    if (_descriptionController.text.isEmpty ||
+        _valueController.text.isEmpty ||
+        _dateController.text.isEmpty) {
       return;
     }
 
     final updatedGoal = GoalCompanion(
       id: drift.Value(originalGoal.id),
-      dateEnd: drift.Value(DateFormat('dd/MM/yyyy').parse(_dateController.text)),
+      dateEnd:
+          drift.Value(DateFormat('dd/MM/yyyy').parse(_dateController.text)),
       description: drift.Value(_descriptionController.text),
       value: drift.Value(int.parse(_valueController.text)),
-      // Mantém os valores originais que não são editados no diálogo
       dateStart: drift.Value(originalGoal.dateStart),
       categoryId: drift.Value(originalGoal.categoryId),
     );
@@ -262,18 +278,20 @@ class _GoalDetailPageState extends State<GoalDetailPage> implements PopUp {
     widget.goalTableHelper.updateGoal(updatedGoal);
   }
 
-
-  // Lógica para Edição e Deleção de Transação (implementação da interface PopUp)
   @override
   Future<void> showAddOrEditDialog(bool isToAdd, int id) async {
     final item = await widget.movementTableHelper.getById(id);
     if (item == null) return;
 
     _descriptionController.text = item.description;
-    _valueController.text = NumberFormat.currency(locale: 'pt_BR', symbol: '').format(item.value);
+    _valueController.text =
+        NumberFormat.currency(locale: 'pt_BR', symbol: '').format(item.value);
     _dateController.text = DateFormat('dd/MM/yyyy').format(item.timestamp);
-    _selectedCategory = await widget.categoryTableHelper.getById(item.categoryId);
-    _selectedGoal = item.goalId != null ? await widget.goalTableHelper.getById(item.goalId!) : null;
+    _selectedCategory =
+        await widget.categoryTableHelper.getById(item.categoryId);
+    _selectedGoal = item.goalId != null
+        ? await widget.goalTableHelper.getById(item.goalId!)
+        : null;
     _isEntryOrExit = [item.isIncome, !item.isIncome];
 
     final result = await showDialog<bool>(
@@ -286,7 +304,10 @@ class _GoalDetailPageState extends State<GoalDetailPage> implements PopUp {
         content: Text("Transação salva!"),
         backgroundColor: Colors.green,
       ));
-      setState(() {}); // Força o FutureBuilder a reconstruir
+      setState(() {
+        _movementsFuture =
+            widget.movementTableHelper.getByGoalId(_currentGoal.id);
+      });
       await _refreshGoalProgress();
     }
   }
@@ -297,7 +318,8 @@ class _GoalDetailPageState extends State<GoalDetailPage> implements PopUp {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Deletar transação'),
-        content: const Text('Você deseja realmente deletar essa transação?\nEssa ação não poderá ser desfeita.'),
+        content: const Text(
+            'Você deseja realmente deletar essa transação?\nEssa ação não poderá ser desfeita.'),
         actions: [
           TextButton(
             child: const Text('Não'),
@@ -319,7 +341,10 @@ class _GoalDetailPageState extends State<GoalDetailPage> implements PopUp {
         content: Text("Transação deletada!"),
         backgroundColor: Colors.red,
       ));
-      setState(() {}); // Força o FutureBuilder a reconstruir
+      setState(() {
+        _movementsFuture =
+            widget.movementTableHelper.getByGoalId(_currentGoal.id);
+      });
       await _refreshGoalProgress();
     }
   }
@@ -332,19 +357,23 @@ class _GoalDetailPageState extends State<GoalDetailPage> implements PopUp {
           return SingleChildScrollView(
             child: ListBody(
               children: [
-                // ToggleButtons, TextFields e Dropdowns para edição da transação
-                 Center(
+                Center(
                   child: ToggleButtons(
                     isSelected: _isEntryOrExit,
                     onPressed: (int index) {
                       setState(() {
-                        _isEntryOrExit = List.generate(_isEntryOrExit.length, (i) => i == index);
+                        _isEntryOrExit = List.generate(
+                            _isEntryOrExit.length, (i) => i == index);
                       });
                     },
                     borderRadius: const BorderRadius.all(Radius.circular(8)),
                     children: const [
-                      Padding(padding: EdgeInsets.symmetric(horizontal: 12), child: Text('Entrada')),
-                      Padding(padding: EdgeInsets.symmetric(horizontal: 12), child: Text('Saída')),
+                      Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 12),
+                          child: Text('Entrada')),
+                      Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 12),
+                          child: Text('Saída')),
                     ],
                   ),
                 ),
@@ -353,33 +382,52 @@ class _GoalDetailPageState extends State<GoalDetailPage> implements PopUp {
                   onTap: _selectDate,
                   readOnly: true,
                   controller: _dateController,
-                  decoration: const InputDecoration(labelText: 'Data', prefixIcon: Icon(Icons.calendar_today)),
+                  decoration: const InputDecoration(
+                      labelText: 'Data',
+                      prefixIcon: Icon(Icons.calendar_today)),
                 ),
                 const SizedBox(height: 20),
                 TextField(
                   controller: _descriptionController,
-                  decoration: const InputDecoration(labelText: 'Descrição', prefixIcon: Icon(Icons.description)),
+                  decoration: const InputDecoration(
+                      labelText: 'Descrição',
+                      prefixIcon: Icon(Icons.description)),
                 ),
                 const SizedBox(height: 20),
                 TextField(
                   controller: _valueController,
-                  decoration: const InputDecoration(labelText: 'Valor', prefixIcon: Icon(Icons.attach_money)),
-                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                  inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'^\d+([,.]\d{0,2})?$'))],
+                  decoration: const InputDecoration(
+                      labelText: 'Valor', prefixIcon: Icon(Icons.attach_money)),
+                  keyboardType:
+                      const TextInputType.numberWithOptions(decimal: true),
+                  inputFormatters: [
+                    FilteringTextInputFormatter.allow(
+                        RegExp(r'^\d+([,.]\d{0,2})?$'))
+                  ],
                 ),
                 const SizedBox(height: 20),
                 DropdownButtonFormField<CategoryData>(
                   value: _selectedCategory,
-                  items: _categories.map((cat) => DropdownMenuItem(value: cat, child: Text(cat.name))).toList(),
-                  onChanged: (value) => setState(() => _selectedCategory = value),
-                  decoration: const InputDecoration(labelText: 'Categoria', prefixIcon: Icon(Symbols.category)),
+                  items: _categories
+                      .map((cat) =>
+                          DropdownMenuItem(value: cat, child: Text(cat.name)))
+                      .toList(),
+                  onChanged: (value) =>
+                      setState(() => _selectedCategory = value),
+                  decoration: const InputDecoration(
+                      labelText: 'Categoria',
+                      prefixIcon: Icon(Symbols.category)),
                 ),
                 const SizedBox(height: 20),
                 DropdownButtonFormField<GoalData?>(
                   value: _selectedGoal,
-                  items: _goals.map((goal) => DropdownMenuItem<GoalData>(value: goal, child: Text(goal.description))).toList(),
+                  items: _goals
+                      .map((goal) => DropdownMenuItem<GoalData>(
+                          value: goal, child: Text(goal.description)))
+                      .toList(),
                   onChanged: (value) => setState(() => _selectedGoal = value),
-                  decoration: const InputDecoration(labelText: 'Meta', prefixIcon: Icon(Icons.sell)),
+                  decoration: const InputDecoration(
+                      labelText: 'Meta', prefixIcon: Icon(Icons.sell)),
                 ),
               ],
             ),
@@ -387,7 +435,9 @@ class _GoalDetailPageState extends State<GoalDetailPage> implements PopUp {
         },
       ),
       actions: [
-        TextButton(onPressed: () => Navigator.of(context).pop(false), child: const Text('Cancelar')),
+        TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Cancelar')),
         TextButton(
           onPressed: () {
             _handleMovementUpdate(movement);
@@ -399,7 +449,7 @@ class _GoalDetailPageState extends State<GoalDetailPage> implements PopUp {
     );
   }
 
-  void _handleMovementUpdate(MovementData originalMovement) {
+  Future<void> _handleMovementUpdate(MovementData originalMovement) async {
     if (_dateController.text.isEmpty ||
         _selectedCategory == null ||
         _descriptionController.text.isEmpty ||
@@ -407,12 +457,14 @@ class _GoalDetailPageState extends State<GoalDetailPage> implements PopUp {
       return;
     }
 
-    final valueString = _valueController.text.replaceAll('.', '').replaceAll(',', '.');
+    final valueString =
+        _valueController.text.replaceAll('.', '').replaceAll(',', '.');
     final value = double.tryParse(valueString) ?? 0.0;
-    
+
     final updatedMovement = MovementCompanion(
       id: drift.Value(originalMovement.id),
-      timestamp: drift.Value(DateFormat('dd/MM/yyyy').parse(_dateController.text)),
+      timestamp:
+          drift.Value(DateFormat('dd/MM/yyyy').parse(_dateController.text)),
       updatedAt: drift.Value(DateTime.now()),
       isIncome: drift.Value(_isEntryOrExit[0]),
       description: drift.Value(_descriptionController.text),
@@ -424,7 +476,6 @@ class _GoalDetailPageState extends State<GoalDetailPage> implements PopUp {
     widget.movementTableHelper.updateTransaction(updatedMovement);
   }
 
-  // Seletor de data genérico
   Future<void> _selectDate() async {
     final initialDate = _dateController.text.isNotEmpty
         ? DateFormat("dd/MM/yyyy").parse(_dateController.text)
@@ -454,10 +505,12 @@ class _GoalProgressHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final progress = (goal.value != 0) ? (currentAmount / goal.value * 100) : 0.0;
+    final progress =
+        (goal.value != 0) ? (currentAmount / goal.value * 100) : 0.0;
     final remainingDays = goal.dateEnd.difference(DateTime.now()).inDays;
-    final currencyFormat = NumberFormat.currency(locale: 'pt_BR', symbol: 'R\$');
-    
+    final currencyFormat =
+        NumberFormat.currency(locale: 'pt_BR', symbol: 'R\$');
+
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Column(
@@ -469,22 +522,25 @@ class _GoalProgressHeader extends StatelessWidget {
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 16),
-          Text('Saldo: ${currencyFormat.format(currentAmount)}', style: const TextStyle(fontSize: 20)),
-          Text('Progresso: ${progress.toStringAsFixed(2)}%', style: const TextStyle(fontSize: 20)),
+          Text('Saldo: ${currencyFormat.format(currentAmount)}',
+              style: const TextStyle(fontSize: 20)),
+          Text('Progresso: ${progress.toStringAsFixed(2)}%',
+              style: const TextStyle(fontSize: 20)),
           const SizedBox(height: 8),
-          Text('Dias restantes: $remainingDays d', style: const TextStyle(fontSize: 20)),
+          Text('Dias restantes: $remainingDays d',
+              style: const TextStyle(fontSize: 20)),
         ],
       ),
     );
   }
 }
 
-// Widget para a Lista de Transações
-class _TransactionListView extends StatelessWidget {
+class TransactionListView extends StatelessWidget {
   final List<MovementData> transactions;
   final void Function(Offset, MovementData) onTransactionTapped;
 
-  const _TransactionListView({
+  const TransactionListView({
+    super.key,
     required this.transactions,
     required this.onTransactionTapped,
   });
@@ -498,7 +554,8 @@ class _TransactionListView extends StatelessWidget {
         final item = transactions[index];
         return _TransactionListItem(
           item: item,
-          onTapDown: (details) => onTransactionTapped(details.globalPosition, item),
+          onTapDown: (details) =>
+              onTransactionTapped(details.globalPosition, item),
         );
       },
     );
@@ -516,7 +573,8 @@ class _TransactionListItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final currencyFormat = NumberFormat.currency(locale: 'pt_BR', symbol: 'R\$');
+    final currencyFormat =
+        NumberFormat.currency(locale: 'pt_BR', symbol: 'R\$');
 
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 4.0),
@@ -528,7 +586,8 @@ class _TransactionListItem extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(DateFormat('dd/MM/yyyy').format(item.timestamp), style: Theme.of(context).textTheme.bodySmall),
+              Text(DateFormat('dd/MM/yyyy').format(item.timestamp),
+                  style: Theme.of(context).textTheme.bodySmall),
               const SizedBox(height: 8),
               Row(
                 children: [
@@ -547,7 +606,9 @@ class _TransactionListItem extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
-                      color: item.isIncome ? Colors.green.shade700 : Colors.red.shade700,
+                      color: item.isIncome
+                          ? Colors.green.shade700
+                          : Colors.red.shade700,
                     ),
                   ),
                 ],
@@ -561,10 +622,13 @@ class _TransactionListItem extends StatelessWidget {
 
   Widget _getInflowOrOutflowIcon(bool isIncome) {
     return SvgPicture.asset(
-      isIncome ? "assets/ic_arrow_circle_up_24.svg" : "assets/ic_arrow_circle_down_24.svg",
+      isIncome
+          ? "assets/ic_arrow_circle_up_24.svg"
+          : "assets/ic_arrow_circle_down_24.svg",
       height: 28,
       width: 28,
-      colorFilter: ColorFilter.mode(isIncome ? Colors.green : Colors.red, BlendMode.srcIn),
+      colorFilter: ColorFilter.mode(
+          isIncome ? Colors.green : Colors.red, BlendMode.srcIn),
     );
   }
 }
