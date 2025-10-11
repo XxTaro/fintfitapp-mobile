@@ -11,7 +11,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 
-// Classe auxiliar para agrupar a meta com seu progresso calculado
 class _GoalWithProgress {
   final GoalData goal;
   final double currentBalance;
@@ -41,17 +40,14 @@ class _GoalPageStatefulState extends State<GoalPageStateful> implements PopUp {
   static const int editGoal = 1;
   static const int deleteGoal = 2;
 
-  // Helpers de banco de dados
   late final MovementTableHelper movementTableHelper;
   late final CategoryTableHelper categoryTableHelper;
   late final GoalTableHelper goalTableHelper;
 
-  // Estado da UI
   List<_GoalWithProgress> _goalsWithProgress = [];
   bool _isLoading = true;
   GoalData? _selectedGoal;
 
-  // Controladores para diálogos
   final TextEditingController _dateController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
   final TextEditingController _valueController = TextEditingController();
@@ -137,7 +133,7 @@ class _GoalPageStatefulState extends State<GoalPageStateful> implements PopUp {
                   : _GoalListView(
                       goalsWithProgress: _goalsWithProgress,
                       onGoalTap: _navigateToDetail,
-                      onGoalLongPress: (position, goalId) => _showPopupMenu(position, goalId),
+                      onGoalLongPress: _showPopupMenu,
                     ),
             ),
           ],
@@ -255,7 +251,7 @@ class _GoalPageStatefulState extends State<GoalPageStateful> implements PopUp {
       value: Value(int.parse(_valueController.text)),
       dateEnd: Value(DateFormat('dd/MM/yyyy').parse(_dateController.text)),
       dateStart: isToAdd ? Value(DateTime.now()) : const Value.absent(),
-      categoryId: isToAdd ? const Value(0) : const Value.absent(), // Assumindo 0 como default
+      categoryId: isToAdd ? const Value(0) : const Value.absent(),
     );
 
     if (isToAdd) {
