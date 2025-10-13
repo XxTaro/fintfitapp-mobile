@@ -450,7 +450,7 @@ class TransactionPage extends State<TransactionPageStateful> implements PopUp {
                         }).toList(),
                         onChanged: (value) {
                           setState(() {
-                            _selectedCategory = value as CategoryData;
+                            _selectedCategory = value!;
                           });
                         },
                       ),
@@ -557,7 +557,7 @@ class TransactionPage extends State<TransactionPageStateful> implements PopUp {
                         }).toList(),
                         onChanged: (value) {
                           setState(() {
-                            _selectedFilterCategory = value as CategoryData;
+                            _selectedFilterCategory = value!;
                           });
                         },
                       ),

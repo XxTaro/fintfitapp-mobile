@@ -153,9 +153,7 @@ class _GoalDetailPageState extends State<GoalDetailPage> implements PopUp {
             Expanded(
               child: TransactionListView(
                 transactions: movements,
-                onTransactionTapped: (position, item) {
-                  _showPopupMenu(position, item);
-                },
+                onTransactionTapped: _showPopupMenu,
               ),
             ),
           ],
@@ -192,22 +190,23 @@ class _GoalDetailPageState extends State<GoalDetailPage> implements PopUp {
     _selectedCategory =
         await widget.categoryTableHelper.getById(goal.categoryId);
 
-    final bool? result = await showDialog<bool>(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => _buildGoalEditDialog(goal),
-    );
-
-    if (result == true && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        content: Text("Meta salva!"),
-        backgroundColor: Colors.green,
-      ));
-      final updatedGoal = await widget.goalTableHelper.getById(goal.id);
-      setState(() {
-        if (updatedGoal != null) _currentGoal = updatedGoal;
-      });
-      await _refreshGoalProgress();
+    if (mounted) {
+      final bool? result = await showDialog<bool>(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => _buildGoalEditDialog(goal),
+      );
+      if (result == true && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text("Meta salva!"),
+          backgroundColor: Colors.green,
+        ));
+        final updatedGoal = await widget.goalTableHelper.getById(goal.id);
+        setState(() {
+          if (updatedGoal != null) _currentGoal = updatedGoal;
+        });
+        await _refreshGoalProgress();
+      }
     }
   }
 
@@ -294,21 +293,24 @@ class _GoalDetailPageState extends State<GoalDetailPage> implements PopUp {
         : null;
     _isEntryOrExit = [item.isIncome, !item.isIncome];
 
-    final result = await showDialog<bool>(
-      context: context,
-      builder: (context) => _buildMovementEditDialog(item),
-    );
+    if (mounted) {
+      final result = await showDialog<bool>(
+        context: context,
+        builder: (context) => _buildMovementEditDialog(item),
+      );
+    
 
-    if (result == true && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        content: Text("Transação salva!"),
-        backgroundColor: Colors.green,
-      ));
-      setState(() {
-        _movementsFuture =
-            widget.movementTableHelper.getByGoalId(_currentGoal.id);
-      });
-      await _refreshGoalProgress();
+      if (result == true && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text("Transação salva!"),
+          backgroundColor: Colors.green,
+        ));
+        setState(() {
+          _movementsFuture =
+              widget.movementTableHelper.getByGoalId(_currentGoal.id);
+        });
+        await _refreshGoalProgress();
+      }
     }
   }
 

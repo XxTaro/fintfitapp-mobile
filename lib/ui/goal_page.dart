@@ -158,18 +158,21 @@ class _GoalPageStatefulState extends State<GoalPageStateful> implements PopUp {
       _dateController.clear();
     }
 
-    final result = await showDialog<bool>(
-      context: context,
-      builder: (_) => _buildAddOrEditDialog(dialogTitle, actionButtonText, isToAdd, goal),
-    );
+    if (mounted) {
+      final result = await showDialog<bool>(
+        context: context,
+        builder: (_) => _buildAddOrEditDialog(dialogTitle, actionButtonText, isToAdd, goal),
+      );
 
-    if (result == true) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        content: Text("Meta salva!"),
-        backgroundColor: Colors.green,
-      ));
-      await _refreshGoals();
+      if (result == true && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text("Meta salva!"),
+          backgroundColor: Colors.green,
+        ));
+        await _refreshGoals();
+      }
     }
+    
   }
 
   @override
@@ -192,7 +195,7 @@ class _GoalPageStatefulState extends State<GoalPageStateful> implements PopUp {
       ),
     );
 
-    if (result == true) {
+    if (result == true && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
         content: Text("Meta deletada!"),
         backgroundColor: Colors.red,

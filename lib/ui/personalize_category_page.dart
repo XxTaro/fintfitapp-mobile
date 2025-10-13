@@ -284,11 +284,11 @@ class _PersonalizeCategoryPageState extends State<PersonalizeCategoryPage> {
                         );
                         return;
                       }
-                      categoryTableHelper.addCategory(CategoryCompanion.insert(name: _categoryNameController.text));
+                      await categoryTableHelper.addCategory(CategoryCompanion.insert(name: _categoryNameController.text));
 
                     } else {
                       CategoryCompanion entry = CategoryCompanion.insert(name: _categoryNameController.text);
-                      categoryTableHelper.updateCategoryById(entry, category!.id);
+                      await categoryTableHelper.updateCategoryById(entry, category!.id);
                     }
 
                     if (context.mounted) {
